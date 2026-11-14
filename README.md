@@ -6,12 +6,12 @@
 
 ## 👥 Project Team
 
-| Name | Admission Number | Role / Contributions |
-| :--- | :--- | :--- |
-| **Bhoomika** | `J240211026` | Requirements Analysis & UML Modeling |
-| **Akshita Upadhyay** | `J240211005` | Backend Architecture, API Development & Decision Engines |
-| **Neel Tripathi** | `J240211049` | Database Schema Design, Normalization & SQL Layer |
-| **Tanishq Saxena** | `J240211060` | Testing, QA Verification & CI Pipeline |
+| Name | Admission Number |
+| :--- | :--- |
+| **Bhoomika** | `J240211026` |
+| **Akshita Upadhyay** | `J240211005` |
+| **Neel Tripathi** | `J240211049` |
+| **Tanishq Saxena** | `J240211060` |
 
 ---
 
