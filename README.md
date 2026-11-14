@@ -4,12 +4,6 @@
 
 ---
 
-## 👩‍💻 Backend Developer
-- **Name**: Akshita Upadhyay
-- **Admission Number**: `J240211005`
-- **Component**: Backend Architecture, REST APIs & Decision-Support Engines
-- **Group Project**: SafeRoute (*Team: Bhoomika, Akshita Upadhyay, Neel Tripathi, Tanishq Saxena*)
-
 ---
 
 ## 📌 Component Overview
