@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "leaflet/dist/leaflet.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens. Light values here, dark overrides under .dark (dark is the default theme).
+ * Semantic pairs: <name> is the solid colour (borders, icons, map), <name>-fg is text that keeps
+ * WCAG AA contrast on a 15% tint of <name> over the surface.
+ */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
+
+  --color-bg: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef1f5;
+  --color-border: #d7dde6;
+  --color-fg: #0f172a;
+  --color-muted: #4a5568;
+  --color-accent: #0e7490;
+  --color-accent-fg: #ffffff;
+  --color-ring: #0891b2;
+
+  --color-ok: #16a34a;
+  --color-ok-fg: #14532d;
+  --color-lime: #65a30d;
+  --color-lime-fg: #365314;
+  --color-warn: #d97706;
+  --color-warn-fg: #78350f;
+  --color-caution: #ea580c;
+  --color-caution-fg: #7c2d12;
+  --color-danger: #dc2626;
+  --color-danger-fg: #7f1d1d;
+  --color-info: #0284c7;
+  --color-info-fg: #0c4a6e;
+  --color-neutral: #64748b;
+  --color-neutral-fg: #1e293b;
+  --color-violet: #7c3aed;
+  --color-violet-fg: #4c1d95;
+
+  /* Categorical chart series (validated: dataviz validate_palette.js, light & dark) */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+
+  --animate-pulse-ring: pulse-ring 1.6s ease-out infinite;
+}
+
+.dark {
+  --color-bg: #0a101c;
+  --color-surface: #111a2b;
+  --color-surface-2: #172238;
+  --color-border: #243149;
+  --color-fg: #e6edf6;
+  --color-muted: #9aa8bd;
+  --color-accent: #22b8cf;
+  --color-accent-fg: #04121a;
+  --color-ring: #38bdf8;
+
+  --color-ok: #22c55e;
+  --color-ok-fg: #86efac;
+  --color-lime: #84cc16;
+  --color-lime-fg: #bef264;
+  --color-warn: #f59e0b;
+  --color-warn-fg: #fcd34d;
+  --color-caution: #f97316;
+  --color-caution-fg: #fdba74;
+  --color-danger: #ef4444;
+  --color-danger-fg: #fca5a5;
+  --color-info: #38bdf8;
+  --color-info-fg: #7dd3fc;
+  --color-neutral: #94a3b8;
+  --color-neutral-fg: #cbd5e1;
+  --color-violet: #a78bfa;
+  --color-violet-fg: #c4b5fd;
+
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg text-fg antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+}
+
+/* Leaflet theming */
+.leaflet-container {
+  background: var(--color-surface-2);
+  font-family: var(--font-sans);
+}
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(185deg) brightness(0.85) contrast(0.9) saturate(0.6);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--color-surface);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--color-muted);
+}
+.leaflet-control-attribution {
+  background: color-mix(in oklab, var(--color-surface) 80%, transparent) !important;
+  color: var(--color-muted) !important;
+  font-size: 10px;
+}
+.leaflet-control-attribution a {
+  color: var(--color-accent) !important;
+}
+.leaflet-bar a {
+  background: var(--color-surface) !important;
+  color: var(--color-fg) !important;
+  border-color: var(--color-border) !important;
+}
+.sr-marker {
+  background: transparent;
+  border: none;
+}
