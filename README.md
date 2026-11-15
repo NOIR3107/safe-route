@@ -13,6 +13,27 @@ The backend is built using **Python and FastAPI**, exposing modular REST APIs an
 
 ---
 
+## 🖥️ Frontend (React command centre)
+
+The `frontend/` folder has the SafeRoute web app: dashboard with a live map, allocation plans that explain
+themselves (Greedy vs Min-Cost Flow), plan versions with diffs, a Chennai flood drill, CRUD screens, shelter
+check-in, an offline Field Team app, a public page in English/Hindi/Tamil, and a 3D view built on
+[god's-eye-view](https://github.com/bilawalsidhu/gods-eye-view) (git submodule in `integrations/gods-eye-view`).
+
+```bash
+cd frontend && npm install && npm run dev   # http://localhost:5173, works with built-in demo data, no backend needed
+```
+
+Set `VITE_API_MODE=live` in `frontend/.env` to use this FastAPI backend instead. More in
+**[frontend/README.md](frontend/README.md)** (demo, screenshots, 3D globe setup) and
+**[docs/api-extensions.md](docs/api-extensions.md)** (endpoints the new features need).
+
+📚 Lab write-ups for all 13 experiments: **[docs/lab](docs/lab/README.md)** · How we work: **[CONTRIBUTING.md](CONTRIBUTING.md)**
+
+![SafeRoute Command Dashboard](docs/screenshots/02-dashboard.png)
+
+---
+
 ## ⚙️ Backend Architecture & Core Features
 
 ```
@@ -90,10 +111,18 @@ SafeRoute-Backend/
 │   ├── services/                  # Application business services
 │   ├── config.py                  # Environment settings & configuration
 │   └── main.py                    # FastAPI application initialization
+├── tests/                         # PyTest suite (unit + API integration)
+├── frontend/                      # React + TypeScript web app
+├── integrations/gods-eye-view/    # 3D globe (git submodule, MIT)
+├── docs/                          # Lab write-ups, API extension spec, screenshots
+├── .github/                       # CI workflows, PR template
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
+├── requirements-dev.txt           # + pytest, httpx, pytest-cov
+├── pytest.ini
 ├── run.py                         # Startup script
+├── CONTRIBUTING.md
 └── README.md
 ```
 
@@ -132,6 +161,13 @@ python run.py
 Or using Uvicorn directly:
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 4. Run the Tests
+```bash
+pip install -r requirements-dev.txt
+pytest                      # 36 tests, in-memory SQLite
+pytest --cov=app            # with coverage (~86%)
 ```
 
 ---
