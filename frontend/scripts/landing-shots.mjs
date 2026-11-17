@@ -18,10 +18,13 @@ async function apiLogin(email, password) {
   return { Authorization: `Bearer ${(await r.json()).access_token}`, "Content-Type": "application/json" };
 }
 
-// A plan on the map makes the dashboard meaningful.
+// Two plan versions (so Plan Versions has a diff), the second approved, make the screens meaningful.
 const h = await apiLogin("coordinator@saferoute.org", "Coord@12345");
-const plan = await (await fetch(`${API}/evacuations/generate`, { method: "POST", headers: h, body: JSON.stringify({ strategy: "min-cost-flow" }) })).json();
+const generate = (strategy) => fetch(`${API}/evacuations/generate`, { method: "POST", headers: h, body: JSON.stringify({ strategy }) }).then((r) => r.json());
+await generate("greedy");
+const plan = await generate("min-cost-flow");
 if (plan?.version) await fetch(`${API}/evacuations/versions/${plan.version}/approve`, { method: "POST", headers: h });
+const drill = (type) => fetch(`${API}/drill/control`, { method: "POST", headers: h, body: JSON.stringify({ type }) });
 
 const browser = await chromium.launch({
   executablePath: process.env.PW_CHROMIUM || undefined,
@@ -50,15 +53,42 @@ for (const theme of ["dark", "light"]) {
   await shot(p, "dashboard", theme);
 
   await p.goto(`${WEB}/app/plan`);
+  await p.getByTestId("assignment-row").first().waitFor();
+  await p.waitForTimeout(1500);
+  await shot(p, "plan", theme);
   await p.getByTestId("assignment-row").first().click();
   await p.getByTestId("explanation-drawer").waitFor();
   await p.waitForTimeout(1500);
   await shot(p, "explain", theme);
 
+  await p.goto(`${WEB}/app/plan/versions`);
+  await p.getByTestId("version-item").first().click();
+  await p.getByTestId("version-detail").waitFor();
+  await p.waitForTimeout(1500);
+  await shot(p, "versions", theme);
+
   await p.goto(`${WEB}/app/drill`);
   await p.waitForTimeout(6000);
   await shot(p, "drill", theme);
+
+  await drill("start");
+  await p.goto(`${WEB}/app`);
+  await p.waitForTimeout(8000);
+  await shot(p, "drill-dashboard", theme);
+  await drill("end");
   await desk.ctx.close();
+
+  for (const [role, path, name] of [
+    ["emergency-authority", "/app/audit", "audit"],
+    ["shelter-manager", "/app/checkin", "checkin"],
+    ["transport-coordinator", "/app/fleet", "fleet"],
+  ]) {
+    const s = await session(theme, role, { width: 1440, height: 900 });
+    await s.page.goto(`${WEB}${path}`);
+    await s.page.waitForTimeout(name === "fleet" ? 6000 : 2500);
+    await shot(s.page, name, theme);
+    await s.ctx.close();
+  }
 
   const phone = await session(theme, "response-team", { width: 390, height: 844 });
   await phone.page.goto(`${WEB}/app/field`);
@@ -66,6 +96,19 @@ for (const theme of ["dark", "light"]) {
   await phone.page.waitForTimeout(1500);
   await shot(phone.page, "field", theme);
   await phone.ctx.close();
+
+  const pub = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: theme });
+  await pub.addInitScript((t) => {
+    localStorage.setItem("saferoute-ui", JSON.stringify({ state: { theme: t, lang: "en", strategy: "min-cost-flow", navCollapsed: false, forceOffline: false }, version: 0 }));
+  }, theme);
+  const pp = await pub.newPage();
+  await pp.goto(`${WEB}/public`);
+  await pp.locator("#lookup").fill("VEL");
+  await pp.locator("#lookup").press("Enter");
+  await pp.getByTestId("public-result").first().waitFor();
+  await pp.waitForTimeout(1200);
+  await shot(pp, "public", theme);
+  await pub.close();
   console.log(`captured ${theme}`);
 }
 await browser.close();

@@ -12,6 +12,7 @@ import { useLogin, useSession } from "@/hooks/session";
 import { homeFor, ROLE_LABEL } from "@/lib/rbac";
 import { cn, errorMessage } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
+import { RouteField } from "@/features/landing/RouteField";
 import { useUiStore } from "@/stores/ui";
 
 const ROLE_BLURB: Record<UserRole, string> = {
@@ -62,7 +63,10 @@ export function LoginPage() {
 
   return (
     <div className={cn("grid min-h-[100dvh] bg-bg", hasDemo && "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]")}>
-      <div className="flex flex-col px-6 py-6 sm:px-10 lg:px-14">
+      <div className="relative isolate flex flex-col px-6 py-6 sm:px-10 lg:px-14">
+        <div className="absolute inset-0 -z-10 opacity-60 [mask-image:radial-gradient(ellipse_at_center,transparent_30%,black_85%)]">
+          <RouteField xStart={0.02} people={60} interactive={false} />
+        </div>
         <header className="flex items-center justify-between">
           <Link to="/" className="group inline-flex items-center gap-2 text-[13.5px] text-muted transition-colors hover:text-fg">
             <ArrowLeft className="size-4 transition-transform duration-200 group-hover:-translate-x-0.5" aria-hidden />
