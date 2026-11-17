@@ -108,6 +108,7 @@ The backend tests create `saferoute_test` and `saferoute_test_drill` themselves.
 
 | | |
 |---|---|
+| Lab file (Word + PDF) | [docs/lab-file](docs/lab-file/SafeRoute_Lab_File.pdf) |
 | Lab experiments 1–12 | [docs/exp01](docs/exp01/exp-01.md) … [docs/exp12](docs/exp12/exp-12.md) |
 | UML (PlantUML sources + images) | [docs/uml](docs/uml) |
 | Database schema | [docs/db/schema.sql](docs/db/schema.sql) |
