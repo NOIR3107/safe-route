@@ -21,6 +21,7 @@ import type {
 } from "@/api/schemas";
 import { useAuthStore } from "@/stores/auth";
 import { errorMessage } from "@/lib/utils";
+import { can } from "@/lib/rbac";
 
 export const keys = {
   summary: ["summary"],
@@ -71,8 +72,11 @@ export const useVehicles = () => useQuery({ queryKey: keys.vehicles, queryFn: ()
 export const useTeams = () => useQuery({ queryKey: keys.teams, queryFn: () => api.listTeams() });
 export const useResources = () => useQuery({ queryKey: keys.resources, queryFn: () => api.listResources() });
 export const usePlan = () => useQuery({ queryKey: keys.plan, queryFn: () => api.activePlan() });
-export const useAssignments = (version?: number) =>
-  useQuery({ queryKey: keys.assignments(version), queryFn: () => api.listAssignments(version) });
+export const useAssignments = (version?: number) => {
+  // The map asks for assignments on every role's pages; only roles with plan:view may read them.
+  const allowed = useAuthStore((s) => can(s.user?.role, "plan:view"));
+  return useQuery({ queryKey: keys.assignments(version), queryFn: () => api.listAssignments(version), enabled: allowed });
+};
 export const useCompare = (enabled: boolean) =>
   useQuery({ queryKey: keys.compare, queryFn: () => api.compareStrategies(), enabled, retry: false });
 export const useOpsEvents = () => useQuery({ queryKey: keys.events, queryFn: () => api.opsEvents() });

@@ -38,6 +38,15 @@ def test_api09_create_disaster_and_zone(client, auth):
     assert "CREATE_DISASTER" in actions and "CREATE_ZONE" in actions
 
 
+def test_zone_names_sharing_a_prefix_get_distinct_codes(client, auth):
+    h = auth("Evacuation Coordinator")
+    body = {"disaster_id": 1, "location": "Adyar", "population": 10, "latitude": 13.0, "longitude": 80.25}
+    codes = [client.post(f"{API}/zones", headers=h, json={**body, "name": n}).json()["ext"]["code"] for n in ("Adyar East", "Adyar West")]
+    assert len(set(codes)) == 2 and all(c.startswith("ADY") for c in codes)
+    explicit = client.post(f"{API}/zones", headers=h, json={**body, "name": "Other", "code": codes[0]})
+    assert explicit.status_code == 409
+
+
 def test_api10_invalid_zone_is_422(client, auth):
     r = client.post(
         f"{API}/zones", headers=auth("Evacuation Coordinator"), json={"disaster_id": 1, "name": "X", "location": "X", "population": -5}

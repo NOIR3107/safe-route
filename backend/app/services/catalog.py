@@ -70,9 +70,18 @@ def update_disaster(repos: Repos, disaster_id: int, body: dict, actor: Actor) ->
 def create_zone(repos: Repos, body: dict, actor: Actor) -> AffectedZone:
     if repos.disasters.get(body["disaster_id"]) is None:
         raise ServiceError(422, "disaster_id does not exist")
-    code = (body.pop("code", None) or body["name"][:3]).upper()
-    if repos.zones.by_code(code):
-        raise ServiceError(409, f"Zone code {code} is already used")
+    code = body.pop("code", None)
+    if code:
+        code = code.upper()
+        if repos.zones.by_code(code):
+            raise ServiceError(409, f"Zone code {code} is already used")
+    else:
+        # No code given: derive one from the name, adding a number if it is taken (ADY, ADY2, ...).
+        base = body["name"][:3].upper()
+        code, n = base, 1
+        while repos.zones.by_code(code):
+            n += 1
+            code = f"{base}{n}"
     lat, lon = body.pop("latitude", None), body.pop("longitude", None)
     if lat is None or lon is None:
         raise ServiceError(422, "latitude and longitude are needed to place the zone on the map")
