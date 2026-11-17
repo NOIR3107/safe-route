@@ -1,4 +1,4 @@
-"""Geometry helpers used for ETAs and vehicle positions (TC-ENG-34 .. TC-ENG-36)."""
+"""Geometry helpers used for ETAs and vehicle positions (TC-ENG-34 .. TC-ENG-36; FR-09)."""
 
 from __future__ import annotations
 

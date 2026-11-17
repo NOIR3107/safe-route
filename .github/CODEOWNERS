@@ -1,0 +1,10 @@
+# Who is asked to review what. GitHub usernames go here once every member has one on the repo.
+# The rules below are commented out until then: uncomment each line and put in the real @username.
+# TODO (team): replace the placeholders below with real GitHub usernames.
+
+# *                     @TODO-tanishq           # default owner
+# /backend/app/engine/  @TODO-tanishq           # allocation engine
+# /backend/             @TODO-tanishq @TODO-akshita
+# /frontend/            @TODO-akshita @TODO-tanishq
+# /docs/                @TODO-bhoomika @TODO-neel
+# /.github/             @TODO-tanishq

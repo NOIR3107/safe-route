@@ -1,0 +1,40 @@
+@startuml activity
+' Exp 3C - Generate evacuation plan (services/planning.py generate_initial_plan + engine/allocate.py).
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+|Coordinator|
+start
+:Choose strategy (Greedy / Min-Cost Flow);
+:POST /evacuations/generate;
+|Planning service|
+if (Caller has plan:generate?) then (no)
+  :Return 403;
+  stop
+endif
+:Load zones, households, shelters,\nroutes, vehicles from PostgreSQL;
+|Engine|
+:Group households into demand groups\n(zone x needs);
+:Compute priority per group (FR-06)\nrisk, severity, vulnerable members;
+:Build zone -> shelter edges;
+:Apply hard constraints (FR-07)\nclosed shelter, blocked route,\nno free capacity, missing facility,\nwalk > max_walk_km;
+:Rank feasible edges by weighted cost (FR-08)\nweights from PlanningConfig;
+if (Strategy?) then (Greedy)
+  :Assign highest priority first\nto cheapest feasible shelter;
+else (Min-Cost Flow)
+  :Solve min-cost flow (SPFA)\nwith unallocated penalty;
+endif
+:Dispatch vehicles; medical / accessibility\ngroups need a suitable vehicle;
+:Compute metrics and explanations;
+|Planning service|
+:Save EvacuationPlan + PlanVersion v1 (Proposed);
+:Save assignments, vehicle and\nresource allocations (FR-09);
+:Write AuditLog + Notification (FR-12);
+:Publish "changed" over WebSocket;
+|Coordinator|
+:See plan, map and "why" explanations;
+if (Approve?) then (yes)
+  :POST /versions/1/approve\n(role-gated);
+endif
+stop
+@enduml

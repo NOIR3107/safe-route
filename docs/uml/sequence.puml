@@ -1,0 +1,37 @@
+@startuml sequence
+' Exp 3D - Create evacuation plan, as implemented.
+skinparam shadowing false
+skinparam defaultFontName Arial
+autonumber
+
+actor Coordinator
+participant "React UI\n(PlanPage)" as UI
+participant "FastAPI\napi/planning.py" as API
+participant "deps.py\n(JWT + RBAC)" as DEPS
+participant "services/planning.py" as SVC
+participant "engine/allocate.py" as ENG
+participant "Repos\n(repositories)" as REPO
+database PostgreSQL as DB
+participant "events.Hub\n(WebSocket)" as WS
+
+Coordinator -> UI : Generate plan (Min-Cost Flow)
+UI -> API : POST /api/v1/evacuations/generate\nAuthorization: Bearer <JWT>
+API -> DEPS : current_user + require("plan:generate")
+DEPS --> API : User (Evacuation Coordinator)
+API -> REPO : advisory lock (serialize_writes)
+API -> SVC : generate_or_regenerate(repos, strategy, actor)
+SVC -> REPO : load zones, households, shelters, routes, vehicles
+REPO -> DB : SELECT ...
+DB --> REPO : rows
+SVC -> ENG : allocate(EngineInput, strategy, severity, cfg)
+ENG --> SVC : AllocationResult (assignments, unallocated, metrics)
+SVC -> REPO : add plan, version v1, assignments, allocations
+SVC -> REPO : audit("GENERATE_PLAN"), notify(...)
+API -> DB : COMMIT
+API -> WS : publish(["*"], mode)
+API --> UI : 200 OK + plan view
+WS --> UI : {"type":"changed","topics":["*"]}
+UI -> API : refetch other live queries (shelters, map, KPIs)
+API --> UI : fresh views
+UI --> Coordinator : plan table + map update
+@enduml

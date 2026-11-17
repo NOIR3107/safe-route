@@ -1,4 +1,4 @@
-"""Service rules tested with fake repositories (TC-SVC-01 .. TC-SVC-09). No database."""
+"""Service rules tested with fake repositories (TC-SVC-01 .. TC-SVC-09; FR-03, FR-04, FR-10, FR-11, FR-12). No database."""
 
 from __future__ import annotations
 

@@ -1,0 +1,37 @@
+# PostgreSQL + FastAPI backend + React frontend.  docker compose up --build
+# Then open http://localhost:5173 and sign in with a lab account from the login page.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: saferoute
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/saferoute
+      DRILL_DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/saferoute_drill
+      CORS_ORIGINS: '["http://localhost:5173"]'
+    ports: ["8000:8000"]
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000/api/v1
+    depends_on: [backend]
+    ports: ["5173:80"]
+
+volumes:
+  pgdata:

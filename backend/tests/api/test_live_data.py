@@ -1,4 +1,4 @@
-"""Live data: ingestion replay, WebSocket push, drill isolation. TC-API-21 .. TC-API-28."""
+"""Live data: ingestion replay, WebSocket push, drill isolation. TC-API-21 .. TC-API-28, TC-API-39 (FR-03, FR-04, FR-05, FR-10, FR-12)."""
 
 from __future__ import annotations
 
@@ -123,7 +123,7 @@ def test_api26_websocket_says_hello_and_pushes_changes(client, auth):
             raise AssertionError("no change message")
 
 
-def test_api29_timeline_tracks_arrivals_and_versions(client, auth):
+def test_api39_timeline_tracks_arrivals_and_versions(client, auth):
     h = auth("Evacuation Coordinator")
     client.post(f"{API}/evacuations/generate", headers=h, json={"strategy": "min-cost-flow"})
     client.post(f"{API}/drill/control", headers=h, json={"type": "start"})

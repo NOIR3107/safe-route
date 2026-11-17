@@ -1,71 +1,78 @@
 # Contributing to SafeRoute
 
-This is how we work on the repo as a team (lab Experiment 9).
+How the team works on this repository (lab Experiment 9).
 
 ## Branches
 
-* `main` – always working. Nobody pushes to it directly; everything goes through a pull request.
-* `feature/<short-name>` – new functionality, e.g. `feature/shelter-checkin`.
-* `fix/<short-name>` – bug fixes, e.g. `fix/route-status-replan`.
-* `docs/<short-name>` – documentation only.
-* `test/<short-name>` – tests only.
+* `main`: released, always green. Protected; changes arrive only by pull request from `develop`.
+* `develop`: integration branch. Protected; feature branches merge here.
+* `feature/<short-name>`: new functionality, e.g. `feature/shelter-checkin`.
+* `fix/<short-name>`: bug fixes, e.g. `fix/near-full-status`.
+* `docs/<short-name>`, `test/<short-name>`, `ci/<short-name>`: docs, tests or pipeline only.
 
-Branch from an up-to-date `main`, keep branches small, and delete them after merging.
+Branch from an up-to-date `develop`, keep branches small, delete them after merging.
 
 ```bash
-git checkout main && git pull
+git checkout develop && git pull
 git checkout -b feature/my-change
-# ...work...
-git push -u origin feature/my-change   # then open a PR on GitHub
+# ...work, commit...
+git push -u origin feature/my-change      # then open a PR into develop
 ```
 
-## Commits
-
-Short imperative messages with a type prefix, the same style as our history:
+## Commit messages (Conventional Commits)
 
 ```
-feat: add walk-in registration to shelter check-in
-fix: stop re-planning when a blocked route has no assignments
-test: cover RBAC on route endpoints
-docs: add test plan
+<type>(<scope>): <what changed, imperative>
+
+feat(engine): exclude shelters whose route is flooded
+fix(frontend): show Near Full at 90% load instead of Full
+test(api): cover RBAC on route endpoints
+docs(exp11): add test summary report
+ci: run ruff before pytest
 ```
+
+Types: `feat`, `fix`, `test`, `docs`, `refactor`, `style`, `ci`, `chore`. Scopes in use: `backend`,
+`engine`, `api`, `frontend`, `map`, `db`, `expNN`.
 
 ## Pull requests
 
-1. Open the PR against `main` and fill in the template (`.github/pull_request_template.md`).
-2. CI has to be green: **Backend CI** (pytest) and/or **Frontend CI** (typecheck, lint, Vitest, build,
-   Playwright) depending on what you touched.
-3. At least **one other team member reviews** before merging. The author doesn't merge their own PR
-   without a review.
-4. Use **Squash and merge** so `main` stays readable.
+1. Open the PR into `develop` and fill in the template.
+2. CI must be green (backend: ruff, pytest with ≥80% coverage on PostgreSQL; frontend: typecheck,
+   ESLint, Vitest, build).
+3. At least **one other member** approves. Code owners (see `.github/CODEOWNERS`) are requested
+   automatically. Nobody merges their own PR without an approval.
+4. Squash and merge.
 
-### What the reviewer checks
+### Reviewer checklist
 
-* Does it do what the PR says, and nothing surprising beyond that?
-* Are there tests for new logic (engine, services, endpoints)?
-* Role checks on any new write endpoint (`require_roles`) and in the frontend (`can(...)`).
-* No secrets, `.env`, `saferoute.db` or build output committed.
-* UI: status is shown with an icon/label, not just colour; works on a phone width.
-* Names and comments make sense to someone who didn't write it.
+- [ ] It does what the PR says, and nothing surprising besides.
+- [ ] New logic has tests (engine, service or endpoint); test IDs follow `TC-<AREA>-<NN>`.
+- [ ] New write endpoints check the role (`require("...")` in `app/api`) and the UI hides what the role
+      can't do (`can(...)` in `src/lib/rbac.ts`).
+- [ ] Schema changes come with an Alembic migration, and `docs/db/schema.sql` is regenerated.
+- [ ] No secrets, `.env` files, database dumps or build output.
+- [ ] UI: status has a label or icon, not colour alone; numbers use tabular figures; works at phone width.
+- [ ] Docs updated if behaviour changed.
 
-Leave comments on specific lines; mark them as "nit:" if they're optional.
+Mark optional comments with `nit:`.
 
-## Running things locally
+## Branch protection (GitHub → Settings → Branches → Add rule)
+
+For `main` and for `develop`:
+
+1. Require a pull request before merging; required approvals: **1**.
+2. Require review from Code Owners.
+3. Dismiss stale approvals when new commits are pushed.
+4. Require status checks to pass: **Backend (ruff + pytest on PostgreSQL)** and
+   **Frontend (typecheck + eslint + vitest + build)**.
+5. Require branches to be up to date before merging.
+6. Do not allow bypassing the above settings; block force pushes and deletions.
+
+## Running locally
+
+See the root [README](README.md). Before pushing:
 
 ```bash
-# backend
-python -m venv .venv && .venv\Scripts\activate      # source .venv/bin/activate on Linux/macOS
-pip install -r requirements-dev.txt
-python run.py                                        # http://localhost:8000/docs
-pytest
-
-# frontend
-cd frontend
-npm install
-npm run dev                                          # http://localhost:5173
-npm test && npm run e2e
-
-# god's-eye-view (3D globe), optional
-git submodule update --init
-cd frontend && npm run gev:install && npm run dev:all
+cd backend && ruff check . && ruff format --check . && pytest
+cd frontend && npm run typecheck && npm run lint && npm test && npm run build
 ```

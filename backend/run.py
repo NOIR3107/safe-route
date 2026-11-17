@@ -1,6 +1,7 @@
-import uvicorn
 import os
 import sys
+
+import uvicorn
 
 # Ensure current project directory is in PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))

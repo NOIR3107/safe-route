@@ -1,4 +1,4 @@
-"""The lab file's full flow on the real API and PostgreSQL. TC-API-09 .. TC-API-20.
+"""The lab file's full flow on the real API and PostgreSQL. TC-API-09 .. TC-API-20 (FR-01, FR-02, FR-07, FR-09, FR-10, FR-11, FR-12).
 
 disaster -> zones -> plan -> close shelter -> reallocation -> approve -> override -> field -> check-in.
 """

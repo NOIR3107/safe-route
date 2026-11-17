@@ -1,0 +1,22 @@
+# Verification run, 17 Nov 2026 (times UTC). Produced by a Playwright script against the running stack:
+# backend uvicorn :8000 on PostgreSQL 16.6, frontend Vite dev server :5173, headless Chromium.
+
+## 1. One feed value end to end, then 2. backend stopped and restarted while the page was open
+2026-11-17T15:16:45.226Z UI before: Mylapore Community Hall #4 · Mylapore Near full 40 + 365 inbound · 90% 450 45 0 Status
+2026-11-17T15:16:45.678Z API before: shelter 4 current_occupancy=40; sending feed value 57
+2026-11-17T15:16:46.454Z POST /ingest -> 200 {"accepted":1,"rejected":0,"errors":[]}
+2026-11-17T15:16:47.507Z UI shows 57 after 1828 ms (no reload)
+2026-11-17T15:16:47.932Z API after: current_occupancy=57
+2026-11-17T15:16:47.938Z ingest status: {"source":"verify-script","last_received_at":"2026-11-17T15:16:46.441707+00:00","seconds_since":1.5,"stale":false,"messages":41,"replay":false}
+2026-11-17T15:16:47.944Z WATCH START - stop the backend now
+2026-11-17T15:16:47.953Z state=live "Live"
+2026-11-17T15:16:55.660Z state=disconnected "Disconnected · retrying in 3 s"
+2026-11-17T15:17:10.603Z state=live "Live"
+2026-11-17T15:18:30.520Z page errors: none
+
+## 3. Map frame rate (dashboard, Evacuation Coordinator, 1440x900, idle, 5 s requestAnimationFrame count)
+{"angle":"d3d11","renderer":"ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)","rafFpsIdle":55.4,"mapStats":{"fps":56,"entities":113}}
+{"angle":"swiftshader","renderer":"ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)","rafFpsIdle":6.6,"mapStats":{"fps":7,"entities":113}}
+
+## 4. Every page for all 8 roles (frontend/e2e/pages.spec.ts)
+9 passed (6.7m) - no console errors on any page

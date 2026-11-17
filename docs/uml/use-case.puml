@@ -1,0 +1,68 @@
+@startuml use-case
+' Exp 3A - Use case diagram. Actors are the eight roles in backend/app/core/rbac.py.
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam actorStyle awesome
+
+actor "Emergency Authority\n(Incident Commander)" as EA
+actor "Evacuation Coordinator" as EC
+actor "Shelter Manager" as SM
+actor "Transport Coordinator" as TC
+actor "Response Team" as RT
+actor "Relief Staff" as RS
+actor "NGO Volunteer" as NGO
+actor "System Administrator" as AD
+actor "Evacuee (public)" as PUB
+actor "Live data feed" as FEED <<system>>
+
+rectangle SafeRoute {
+  usecase "Log in (JWT)" as UC0
+  usecase "Manage disaster incidents\n(FR-01)" as UC1
+  usecase "Register / update affected zones\n(FR-02)" as UC2
+  usecase "Manage shelters, capacity,\nfacilities (FR-03)" as UC3
+  usecase "Update route status and risk\n(FR-04)" as UC4
+  usecase "Manage vehicles and teams\n(FR-05)" as UC5
+  usecase "Generate evacuation plan\n(FR-06..09)" as UC6
+  usecase "Explain shelter choice" as UC6b
+  usecase "Approve plan version" as UC7
+  usecase "Override assignment" as UC8
+  usecase "Reallocate on change\n(FR-10)" as UC9
+  usecase "Monitor dashboard and map" as UC10
+  usecase "Check in households / walk-ins" as UC11
+  usecase "Record pickup and arrival" as UC12
+  usecase "Run drill on a copy of live data" as UC13
+  usecase "Read audit log and notifications\n(FR-12)" as UC14
+  usecase "Look up assigned shelter" as UC15
+  usecase "Ingest feed messages" as UC16
+}
+
+EA --> UC1
+EA --> UC7
+EA --> UC14
+EA --> UC10
+EC --> UC2
+EC --> UC6
+EC --> UC7
+EC --> UC8
+EC --> UC10
+EC --> UC13
+SM --> UC3
+SM --> UC11
+TC --> UC4
+TC --> UC5
+RT --> UC12
+RS --> UC10
+NGO --> UC10
+AD --> UC1
+AD --> UC14
+PUB --> UC15
+FEED --> UC16
+
+UC6 ..> UC6b : <<extend>>
+UC6 ..> UC0 : <<include>>
+UC4 ..> UC9 : <<extend>>\n[route blocked]
+UC3 ..> UC9 : <<extend>>\n[shelter closed/full]
+UC16 ..> UC9 : <<extend>>\n[critical change]
+UC9 ..> UC14 : <<include>>
+@enduml

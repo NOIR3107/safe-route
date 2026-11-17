@@ -1,0 +1,212 @@
+@startuml class
+' Exp 3B - Core classes. Domain entities are the SQLAlchemy models in backend/app/models;
+' the service and engine classes are the ones that act on them.
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Domain (app/models)" {
+  class User {
+    user_id
+    name
+    email
+    role
+    shelter_id
+    team_id
+  }
+  class Disaster {
+    disaster_id
+    title
+    type
+    severity
+    status
+    start_date
+  }
+  class AffectedZone {
+    zone_id
+    code
+    name
+    location
+    population
+    priority
+    risk_level
+    severity
+  }
+  class Household {
+    household_id
+    token
+    head_name
+    size
+    elderly
+    children
+    disabled
+    medical
+    status
+    arrived_minute
+  }
+  class HouseholdMember {
+    household_id
+    position
+    name
+  }
+  class Shelter {
+    shelter_id
+    name
+    location
+    capacity
+    current_occupancy
+    reserved_pct
+    status
+  }
+  class ShelterFacility {
+    facility_id
+    facility_type
+    availability_status
+  }
+  class Route {
+    route_id
+    source
+    destination
+    distance_km
+    travel_time
+    risk_level
+    status
+  }
+  class RoadSegment {
+    segment_id
+    name
+  }
+  class Vehicle {
+    vehicle_id
+    vehicle_type
+    capacity
+    status
+    position_lat
+    position_lon
+  }
+  class RescueTeam {
+    team_id
+    name
+    members_count
+    status
+  }
+  class EvacuationPlan {
+    plan_id
+    name
+    status
+    priority
+    created_at
+  }
+  class PlanVersion {
+    version_id
+    version
+    strategy
+    trigger
+    status
+    metrics
+    approved_by
+  }
+  class EvacuationAssignment {
+    assignment_id
+    people_count
+    eta_minutes
+    status
+    approval
+    override_reason
+  }
+  class Resource {
+    resource_id
+    resource_type
+    quantity
+    availability
+    per_person
+  }
+  class ResourceAllocation {
+    allocation_id
+    quantity
+    resource_id
+    shelter_id
+  }
+  class Notification {
+    notification_id
+    type
+    message
+    status
+    timestamp
+  }
+  class AuditLog {
+    log_id
+    action
+    entity_type
+    details
+    timestamp
+  }
+}
+
+Disaster "1" *-- "many" AffectedZone
+AffectedZone "1" *-- "many" Household
+Household "1" *-- "many" HouseholdMember
+Shelter "1" *-- "many" ShelterFacility
+Route "many" --> "1" AffectedZone : from
+Route "many" --> "1" Shelter : to
+Route "1" o-- "many" RoadSegment : via
+Disaster "1" *-- "many" EvacuationPlan
+EvacuationPlan "1" *-- "many" PlanVersion
+PlanVersion "many" o-- "many" EvacuationAssignment
+EvacuationAssignment --> AffectedZone
+EvacuationAssignment --> Shelter
+EvacuationAssignment --> Route
+EvacuationAssignment "many" o-- "many" Vehicle
+EvacuationAssignment "many" o-- "many" Household
+PlanVersion "1" *-- "many" ResourceAllocation
+ResourceAllocation --> Resource
+ResourceAllocation --> Shelter
+RescueTeam "1" o-- "many" Vehicle
+User --> Notification
+User --> AuditLog
+EvacuationPlan --> User : created_by
+
+package "Services (app/services)" {
+  class PlanningService <<module planning.py>> {
+    generate_initial_plan()
+    replan()
+    approve_version()
+    override_assignment()
+    compare()
+  }
+  class CatalogService <<module catalog.py>> {
+    create_*() / update_*()
+    transition_shelter()
+    transition_route()
+  }
+  class Logbook <<module logbook.py>> {
+    audit()
+    notify()
+  }
+}
+
+package "Engine (app/engine, pure)" {
+  class Allocator <<module allocate.py>> {
+    allocate(input, strategy, severity, cfg)
+    compare_strategies()
+    explain()
+  }
+  class PriorityCalculator <<module priority.py>>
+  class CostModel <<module cost.py>>
+  class MinCostFlow <<module mcf.py>>
+  class PlanningConfig {
+    weights
+    thresholds
+    walk_in_reserve
+  }
+}
+
+PlanningService ..> Allocator : builds EngineInput
+PlanningService ..> Logbook
+CatalogService ..> PlanningService : triggers replan (FR-10)
+Allocator ..> PriorityCalculator
+Allocator ..> CostModel
+Allocator ..> MinCostFlow
+Allocator ..> PlanningConfig
+@enduml

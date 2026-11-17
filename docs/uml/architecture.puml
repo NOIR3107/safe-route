@@ -1,0 +1,91 @@
+@startuml architecture
+' Exp 4 - Layered architecture as implemented. Each box names its folder.
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam componentStyle rectangle
+
+actor "Users (8 roles)" as U
+actor "Public evacuee" as P
+cloud "Live data feed\n(river gauge, road reports,\nvehicle GPS)" as FEED
+
+package "Presentation - frontend/src" {
+  [React pages\nfeatures/*] as PAGES
+  [CesiumJS map\ncomponents/map] as MAP
+  [Store: TanStack Query cache\nhooks/queries.ts + api/live.ts] as STORE
+  [API client + zod schemas\napi/http, api/viewSchemas.ts] as CLIENT
+}
+
+package "API - backend/app/api" {
+  [REST routers\nauth, catalog, planning,\noperations, ops, ingest] as REST
+  [WebSocket /ws\nws.py] as WSAPI
+  [JWT + RBAC deps\ndeps.py, core/rbac.py] as DEPS
+}
+
+package "Ingestion - backend/app/ingestion" {
+  [Pydantic feed schemas\nschemas.py] as ISCH
+  [Adapter\nadapter.py] as IAD
+  [Replay (dev only, off by default)\nreplay.py] as REPLAY
+}
+
+package "Services - backend/app/services" {
+  [planning.py] as SPLAN
+  [catalog.py] as SCAT
+  [operations.py] as SOPS
+  [drill.py] as SDRILL
+  [views.py] as SVIEW
+  [logbook.py\n(audit + notify)] as SLOG
+}
+
+package "Engine (pure Python) - backend/app/engine" {
+  [priority.py] as EPRI
+  [cost.py] as ECOST
+  [allocate.py\nGreedy + Min-Cost Flow] as EALLOC
+  [replan.py / diff.py / status.py] as EREP
+  [config.py\nPlanningConfig] as ECFG
+}
+
+package "Data access - backend/app/repositories" {
+  [Repos: catalog, plans,\naudit, ops] as REPOS
+  [SQLAlchemy models\napp/models] as MODELS
+}
+
+database "PostgreSQL\nsaferoute (live)" as DBL
+database "PostgreSQL\nsaferoute_drill" as DBD
+[core/events.py\nHub] as HUB
+
+U --> PAGES
+P --> PAGES
+PAGES --> STORE
+MAP --> STORE
+STORE --> CLIENT
+CLIENT --> REST : HTTPS JSON
+CLIENT <-- WSAPI : "changed" + tick
+REST --> DEPS
+REST --> SPLAN
+REST --> SCAT
+REST --> SOPS
+REST --> SDRILL
+REST --> SVIEW
+FEED --> REST : POST /ingest\n(X-Ingest-Token)
+REST --> IAD
+REPLAY --> IAD
+IAD --> ISCH
+IAD --> SCAT
+SPLAN --> EALLOC
+SPLAN --> EREP
+EALLOC --> EPRI
+EALLOC --> ECOST
+EALLOC --> ECFG
+SPLAN --> SLOG
+SCAT --> SPLAN : reallocation (FR-10)
+SPLAN --> REPOS
+SCAT --> REPOS
+SOPS --> REPOS
+SVIEW --> REPOS
+SDRILL --> REPOS
+REPOS --> MODELS
+MODELS --> DBL
+MODELS --> DBD
+REST --> HUB : publish after commit
+HUB --> WSAPI
+@enduml

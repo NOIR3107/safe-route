@@ -1,0 +1,6 @@
+node_modules
+dist
+public/cesium
+test-results
+playwright-report
+reports
