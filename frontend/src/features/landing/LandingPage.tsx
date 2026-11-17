@@ -18,7 +18,7 @@ import { EASE } from "./ease";
 import { CountUp, Reveal, Shot, Spotlight, WordReveal } from "./motion";
 import { RouteField } from "./RouteField";
 
-const REPO = "https://github.com/Tanishq7690/se-project-";
+const REPO = "https://github.com/NOIR3107/safe-route";
 
 const SCENARIO = [
   { value: 8, label: "affected zones" },
