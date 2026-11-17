@@ -1,0 +1,32 @@
+"""Fixed vocabularies. Each one is enforced by a CHECK constraint in the database."""
+
+from app.core.rbac import ROLES
+
+USER_ROLES = ROLES
+DISASTER_SEVERITIES = ("Low", "Medium", "High", "Critical")
+DISASTER_STATUSES = ("Active", "Under Control", "Resolved")
+ZONE_PRIORITIES = ("P1", "P2", "P3", "P4")
+ZONE_RISK_LEVELS = ("Extreme", "High", "Moderate", "Low")
+ZONE_STATUSES = ("Pending", "In Progress", "Partially Evacuated", "Evacuated")
+HOUSEHOLD_STATUSES = ("Awaiting", "Picked Up", "Arrived", "Checked In")
+SHELTER_STATUSES = ("Active", "Full", "Inactive", "Closed")
+FACILITY_TYPES = ("Medical", "Power", "Water", "Accessibility", "Pets", "Food", "Bedding")
+FACILITY_AVAILABILITY = ("Available", "Limited", "Unavailable")
+ROUTE_STATUSES = ("Open", "Congested", "Blocked", "Flooded", "Cleared")
+ROUTE_RISK_LEVELS = ("Low", "Moderate", "High", "Severe")
+GEOMETRY_SOURCES = ("schematic", "osrm")
+VEHICLE_TYPES = ("Bus", "Ambulance", "Truck", "Boat", "Van")
+VEHICLE_STATUSES = ("Available", "Assigned", "In Transit", "Maintenance")
+POSITION_SOURCES = ("depot", "estimated", "gps")
+TEAM_STATUSES = ("Available", "Deployed", "Standby")
+PLAN_STATUSES = ("Draft", "Active", "Completed", "Reallocated", "Cancelled")
+VERSION_STATUSES = ("Proposed", "Approved", "Superseded")
+STRATEGIES = ("greedy", "min-cost-flow")
+ASSIGNMENT_STATUSES = ("Scheduled", "In Progress", "Completed", "Rerouted", "Cancelled")
+APPROVAL_STATES = ("Proposed", "Approved", "Overridden")
+VEHICLE_ASSIGNMENT_STATUSES = ("Assigned", "In Transit", "Completed", "Reassigned")
+RESOURCE_AVAILABILITY = ("Available", "Low Stock", "Depleted")
+NOTIFICATION_TYPES = ("INFO", "WARNING", "ALERT", "CRITICAL")
+NOTIFICATION_STATUSES = ("Unread", "Read")
+OPS_EVENT_LEVELS = ("info", "warning", "critical", "success")
+DRILL_PHASES = ("idle", "ready", "running", "paused", "finished")

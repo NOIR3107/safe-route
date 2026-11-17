@@ -39,3 +39,7 @@ Thumbs.db
 # test reports
 reports/
 coverage.xml
+
+# Backend generated files
+backend/reports/
+backend/var/

@@ -1,0 +1,12 @@
+# RECORDED SAMPLE FEED (not live data). Replayed only when REPLAY_FEED=true; the UI then shows "REPLAY".
+# Field reports for the seeded Adyar flood scenario. Shelter ids: 1 T. Nagar, 2 Nehru Stadium, 3 Loyola,
+# 4 Mylapore, 5 IIT Gymkhana, 6 Guindy School, 7 Anna University.
+{"after_seconds": 5, "source": "field-devices", "messages": [{"kind": "route_status", "segment": "Velachery Main Rd", "status": "Congested", "reason": "Heavy rain: Velachery Main Rd congested"}]}
+{"after_seconds": 20, "source": "field-devices", "messages": [{"kind": "vehicle_position", "vehicle_id": 1, "latitude": 12.9902, "longitude": 80.2186}, {"kind": "vehicle_position", "vehicle_id": 2, "latitude": 13.0391, "longitude": 80.2479}]}
+{"after_seconds": 35, "source": "river-gauge", "messages": [{"kind": "route_status", "segment": "Thiru Vi Ka Bridge", "status": "Flooded", "reason": "Thiru Vi Ka Bridge (Adyar) flooded – river overtops"}]}
+{"after_seconds": 55, "source": "shelter-desk", "messages": [{"kind": "walk_ins", "shelter_id": 5, "people": 300, "reason": "300 walk-ins from Velachery arrive at IIT Madras Gymkhana"}]}
+{"after_seconds": 75, "source": "shelter-desk", "messages": [{"kind": "facility_status", "shelter_id": 3, "facilities": ["Power", "Medical"], "availability": "Unavailable", "reason": "Loyola College Auditorium loses power – medical unit offline"}]}
+{"after_seconds": 95, "source": "field-devices", "messages": [{"kind": "vehicle_position", "vehicle_id": 1, "latitude": 12.9975, "longitude": 80.2241}, {"kind": "vehicle_position", "vehicle_id": 2, "latitude": 13.0302, "longitude": 80.2433}]}
+{"after_seconds": 120, "source": "shelter-desk", "messages": [{"kind": "shelter_status", "shelter_id": 6, "status": "Closed", "reason": "Guindy Govt Model School closed – structural crack reported"}]}
+{"after_seconds": 170, "source": "shelter-desk", "messages": [{"kind": "facility_status", "shelter_id": 3, "facilities": ["Power", "Medical"], "availability": "Available", "reason": "Loyola College Auditorium power restored"}]}
+{"after_seconds": 200, "source": "river-gauge", "messages": [{"kind": "route_status", "segment": "Thiru Vi Ka Bridge", "status": "Cleared", "reason": "Thiru Vi Ka Bridge cleared by GCC engineers"}]}

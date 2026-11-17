@@ -1,3 +1,0 @@
-"""
-SafeRoute Test Suite
-"""
