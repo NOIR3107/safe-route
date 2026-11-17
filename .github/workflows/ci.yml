@@ -52,8 +52,7 @@ jobs:
         if: failure()
         run: |
           # The end of the pytest output as an annotation, readable on the run page without opening the log.
-          msg=$(tail -60 reports/pytest.log | sed -e 's/%/%25/g' -e 's///g' | sed ':a;N;$!ba;s/
-/%0A/g')
+          msg=$(tail -60 reports/pytest.log | tr -d '\r' | sed -e 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}')
           echo "::error title=pytest output (last 60 lines)::$msg"
       - uses: actions/upload-artifact@v4
         if: always()
