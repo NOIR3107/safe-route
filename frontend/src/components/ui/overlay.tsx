@@ -22,16 +22,16 @@ export function DialogContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: ReactNode; description?: ReactNode }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/55" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/50 backdrop-blur-[2px] data-[state=open]:animate-[fade-in_150ms_ease-out]" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-[1001] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-5 shadow-[0_16px_48px_-12px_rgb(0_0_0/0.45)] focus:outline-none",
+          "fixed left-1/2 top-1/2 z-[1001] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-6 shadow-float focus:outline-none data-[state=open]:animate-[dialog-in_200ms_var(--ease-out-quart)]",
           className,
         )}
         {...p}
       >
         <div className="mb-4 pr-8">
-          <DialogPrimitive.Title className="text-base font-semibold">{title}</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="text-[17px] font-semibold tracking-[-0.015em]">{title}</DialogPrimitive.Title>
           {description ? (
             <DialogPrimitive.Description className="mt-1 text-sm text-muted">{description}</DialogPrimitive.Description>
           ) : (
@@ -58,17 +58,17 @@ export function SheetContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: ReactNode; description?: ReactNode }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/45" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-[1px] data-[state=open]:animate-[fade-in_150ms_ease-out]" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed inset-y-0 right-0 z-[1001] flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-[-16px_0_48px_-16px_rgb(0_0_0/0.4)] focus:outline-none",
+          "fixed inset-y-0 right-0 z-[1001] flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-float focus:outline-none data-[state=open]:animate-[sheet-in_260ms_var(--ease-out-quart)]",
           className,
         )}
         {...p}
       >
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div>
-            <DialogPrimitive.Title className="text-base font-semibold">{title}</DialogPrimitive.Title>
+            <DialogPrimitive.Title className="text-[17px] font-semibold tracking-[-0.015em]">{title}</DialogPrimitive.Title>
             {description ? (
               <DialogPrimitive.Description className="mt-0.5 text-sm text-muted">{description}</DialogPrimitive.Description>
             ) : (

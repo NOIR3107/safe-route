@@ -6,18 +6,40 @@ import { Dialog, DialogContent } from "@/components/ui/overlay";
 import { Label, Skeleton, Textarea } from "@/components/ui/primitives";
 import { cn, errorMessage } from "@/lib/utils";
 
+export interface HeaderStat {
+  label: string;
+  value: ReactNode;
+  sub?: ReactNode;
+  /** Colours the value: only for figures that carry a status (e.g. people still at risk). */
+  tone?: "danger" | "warn" | "ok";
+}
+
 /**
- * Page title row. `icon` is still accepted so callers don't change, but it isn't drawn: the
- * sidebar already shows it next to the same name, and a coloured icon on every title was noise.
+ * Page title row with optional key figures underneath. `icon` is still accepted so callers don't
+ * change, but it isn't drawn: the sidebar already shows it next to the same name.
  */
-export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode; icon?: LucideIcon }) {
+export function PageHeader({ title, description, actions, stats }: { title: string; description?: ReactNode; actions?: ReactNode; icon?: LucideIcon; stats?: HeaderStat[] }) {
+  const toneClass = { danger: "text-danger-fg", warn: "text-warn-fg", ok: "text-ok-fg" } as const;
   return (
-    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-border bg-surface/40 px-4 pt-5 pb-4 sm:px-6">
-      <div className="min-w-0 max-w-3xl">
-        <h1 className="text-[1.35rem] leading-tight font-semibold tracking-[-0.015em]">{title}</h1>
-        {description ? <p className="mt-1 text-[13.5px] leading-relaxed text-muted">{description}</p> : null}
+    <div className="border-b border-border px-4 pt-7 pb-6 sm:px-7">
+      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div className="min-w-0 max-w-3xl">
+          <h1 className="text-[1.65rem] leading-tight font-semibold tracking-[-0.03em]">{title}</h1>
+          {description ? <p className="mt-1.5 text-[14px] leading-relaxed text-muted">{description}</p> : null}
+        </div>
+        {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+      {stats && stats.length > 0 ? (
+        <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-0">
+          {stats.map((st, i) => (
+            <div key={st.label} className={cn("min-w-0 sm:pr-8", i > 0 && "sm:border-l sm:border-border sm:pl-8")}>
+              <dt className="text-[12px] text-muted">{st.label}</dt>
+              <dd className={cn("mt-1 font-mono text-[1.35rem] leading-none font-medium tracking-[-0.03em] tabular-nums", st.tone && toneClass[st.tone])}>{st.value}</dd>
+              {st.sub ? <dd className="mt-1.5 text-[12px] text-muted max-sm:hidden">{st.sub}</dd> : null}
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </div>
   );
 }

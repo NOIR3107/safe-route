@@ -1,5 +1,5 @@
 import { Ambulance, Boxes, Bus, Plus, Ship, Truck, Users, Car, type LucideIcon } from "lucide-react";
-import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import { MapListLayout } from "@/components/layout/MapListLayout";
 import { useMapStore } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import { TEAM_STATUSES, VEHICLE_TYPES, type TeamStatus, type Vehicle, type VehicleStatus } from "@/api/schemas";
@@ -30,11 +30,29 @@ const TEAM_FIELDS: FieldSpec[] = [
 
 export function FleetPage() {
   const focus = useMapStore((st) => st.selection);
+  const { data: vehicles } = useVehicles();
+  const { data: teams } = useTeams();
+  const count = (s: VehicleStatus) => (vehicles ?? []).filter((v) => v.status === s).length;
+  const moving = count("Assigned") + count("In Transit");
   return (
     <div>
-      <PageHeader icon={Bus} title="Vehicles & Rescue Teams" description="Capacity, type, location and availability (FR-05). Vehicles in transit are shown live on the dashboard map." />
-      <div className="space-y-4 p-4 sm:p-6">
-        <EmbeddedMap focus={focus ?? undefined} />
+      <PageHeader
+        icon={Bus}
+        title="Vehicles & Rescue Teams"
+        description="Capacity, type, location and availability (FR-05). Vehicles in transit are shown live on the dashboard map."
+        stats={
+          vehicles
+            ? [
+                { label: "Vehicles", value: vehicles.length, sub: `${fmtNum(vehicles.reduce((n, v) => n + v.capacity, 0))} seats` },
+                { label: "Available", value: count("Available"), tone: count("Available") === 0 ? "danger" : undefined },
+                { label: "Assigned or moving", value: moving },
+                { label: "Maintenance", value: count("Maintenance"), tone: count("Maintenance") > 0 ? "warn" : undefined },
+                { label: "Rescue teams", value: teams?.length ?? "–", sub: teams ? `${teams.filter((t) => t.status === "Available").length} available` : undefined },
+              ]
+            : undefined
+        }
+      />
+      <MapListLayout focus={focus ?? undefined}>
         <Tabs defaultValue="vehicles">
           <TabsList aria-label="Fleet sections">
             <TabsTrigger value="vehicles">
@@ -57,7 +75,7 @@ export function FleetPage() {
             <ResourcesTab />
           </TabsContent>
         </Tabs>
-      </div>
+      </MapListLayout>
     </div>
   );
 }

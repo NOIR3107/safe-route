@@ -1,5 +1,5 @@
 import { Building2, Pencil, Plus } from "lucide-react";
-import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import { MapListLayout } from "@/components/layout/MapListLayout";
 import type { MapSelection } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import { FACILITIES, type Facility, type ShelterView } from "@/api/extensions";
@@ -55,6 +55,14 @@ export function SheltersPage() {
     [data, q, status],
   );
 
+  const totals = useMemo(() => {
+    const ss = (data ?? []).filter((s) => s.display_status !== "Closed");
+    const capacity = ss.reduce((n, s) => n + s.capacity, 0);
+    const present = ss.reduce((n, s) => n + s.current_occupancy, 0);
+    const inbound = ss.reduce((n, s) => n + s.inbound, 0);
+    return { open: ss.length, all: (data ?? []).length, capacity, present, inbound, available: ss.reduce((n, s) => n + s.available, 0), nearFull: ss.filter((s) => s.display_status !== "Open").length };
+  }, [data]);
+
   const submit = (v: FormValues) => {
     const body = {
       name: v.name!.trim(),
@@ -79,6 +87,17 @@ export function SheltersPage() {
             ? "Shelter Managers can view and edit only their own shelter (RBAC scope)."
             : "Total, reserved (10% walk-in buffer) and available capacity; facilities; status state machine Open → Near Full → Full → Closed (FR-03)."
         }
+        stats={
+          data && !scoped
+            ? [
+                { label: "Open shelters", value: totals.open, sub: `of ${totals.all}` },
+                { label: "Capacity", value: fmtNum(totals.capacity), sub: "open shelters" },
+                { label: "Present", value: fmtNum(totals.present), sub: `+ ${fmtNum(totals.inbound)} on the way` },
+                { label: "Free to plan", value: fmtNum(totals.available), tone: totals.available < totals.inbound ? "warn" : undefined },
+                { label: "Near full or full", value: totals.nearFull, tone: totals.nearFull > 0 ? "warn" : "ok" },
+              ]
+            : undefined
+        }
         actions={
           can("shelter:write") && !scoped ? (
             <Button onClick={() => setEditing("new")}>
@@ -87,8 +106,7 @@ export function SheltersPage() {
           ) : null
         }
       />
-      <div className="space-y-4 p-4 sm:p-6">
-        <EmbeddedMap focus={focus ?? undefined} />
+      <MapListLayout focus={focus ?? undefined}>
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
             <Input aria-label="Search shelters" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="w-56" />
@@ -178,7 +196,7 @@ export function SheltersPage() {
             </Table>
           )}
         </Card>
-      </div>
+      </MapListLayout>
       <EntityFormDialog
         open={editing != null}
         onOpenChange={(o) => !o && setEditing(null)}

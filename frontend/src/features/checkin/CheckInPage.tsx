@@ -5,7 +5,7 @@ import { EmptyState, ErrorState, PageHeader } from "@/components/common";
 import { FacilityIcons, ShelterStatusBadge } from "@/components/status/badges";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/overlay";
-import { Badge, Card, CardContent, CardHeader, CardTitle, Input, Label, Progress, Select, Skeleton } from "@/components/ui/primitives";
+import { Badge, Card, CardContent, CardHeader, CardTitle, Input, Label, Select, Skeleton } from "@/components/ui/primitives";
 import { useCheckIn, useReunify, useRoster, useShelters, useWalkIn } from "@/hooks/queries";
 import { useSession } from "@/hooks/session";
 import { SHELTER_STATUS } from "@/lib/semantic";
@@ -37,27 +37,25 @@ export function CheckInPage() {
           ) : null
         }
       />
-      <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-[1fr_1fr]">
+      <div className="grid gap-5 p-4 sm:p-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
         {isLoading || !shelter ? (
           <Skeleton className="h-40 lg:col-span-2" />
         ) : (
-          <Card className="p-4 lg:col-span-2">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <Card className="p-5 sm:p-6 lg:col-span-2">
+            <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+              <div>
+                <p className="text-[12.5px] text-muted">Live occupancy</p>
+                <p className="mt-1.5 flex items-baseline gap-2">
+                  <span className="font-mono text-[2.6rem] leading-none font-medium tracking-[-0.04em] tabular-nums" data-testid="live-occupancy">{fmtNum(shelter.current_occupancy)}</span>
+                  <span className="text-[15px] text-muted">of {fmtNum(shelter.capacity)} places</span>
+                </p>
+              </div>
               <div className="flex items-center gap-2">
                 <ShelterStatusBadge status={shelter.display_status} />
                 <FacilityIcons available={shelter.available_facilities} />
               </div>
-              <p className="text-sm text-muted">
-                Live occupancy <span className="text-2xl font-semibold tabular-nums text-fg" data-testid="live-occupancy">{fmtNum(shelter.current_occupancy)}</span> / {fmtNum(shelter.capacity)}
-              </p>
             </div>
-            <Progress className="mt-3 h-2.5" value={shelter.current_occupancy / shelter.capacity} tone={SHELTER_STATUS[shelter.display_status].tone} label="Occupancy" />
-            <dl className="mt-4 grid grid-cols-2 text-sm sm:grid-cols-4 overflow-hidden rounded-md border border-border [&>*]:border-border max-sm:[&>*:nth-child(odd)]:border-r max-sm:[&>*:nth-child(-n+2)]:border-b sm:[&>*:not(:last-child)]:border-r">
-              <Fact label="Present" value={fmtNum(shelter.current_occupancy)} />
-              <Fact label="Inbound (planned)" value={fmtNum(shelter.inbound)} />
-              <Fact label="Walk-in reserve (10%)" value={`${fmtNum(shelter.reserved)} · ${fmtNum(shelter.ext.walk_ins)} used`} />
-              <Fact label="Available to plan" value={fmtNum(shelter.available)} />
-            </dl>
+            <CapacityBar shelter={shelter} />
           </Card>
         )}
         {shelterId != null ? (
@@ -71,14 +69,38 @@ export function CheckInPage() {
   );
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
+/** One bar for the whole shelter: who is here, who is coming, what is held back, what is free. */
+function CapacityBar({ shelter }: { shelter: { capacity: number; current_occupancy: number; inbound: number; reserved: number; available: number; display_status: keyof typeof SHELTER_STATUS; ext: { walk_ins: number } } }) {
+  const cap = Math.max(1, shelter.capacity);
+  const parts = [
+    { key: "present", label: "Present", value: shelter.current_occupancy, cls: SHELTER_BAR[SHELTER_STATUS[shelter.display_status].tone] ?? "bg-ok" },
+    { key: "inbound", label: "On the way (planned)", value: shelter.inbound, cls: "bg-info/70" },
+    { key: "reserve", label: `Walk-in reserve, ${fmtNum(shelter.ext.walk_ins)} used`, value: shelter.reserved, cls: "bg-fg/25" },
+    { key: "free", label: "Free to plan", value: shelter.available, cls: "bg-transparent ring-1 ring-inset ring-border-strong" },
+  ];
   return (
-    <div className="px-3 py-2.5">
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-1 font-semibold tabular-nums">{value}</dd>
+    <div className="mt-6">
+      <div role="progressbar" aria-label="Occupancy" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((shelter.current_occupancy / cap) * 100)} className="flex h-3 gap-[3px]">
+        {parts.map((p) =>
+          p.value > 0 ? <span key={p.key} className={cn("h-full rounded-[3px] transition-[flex-grow] duration-500", p.cls)} style={{ flexGrow: p.value, flexBasis: 0, minWidth: 4 }} /> : null,
+        )}
+      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+        {parts.map((p) => (
+          <div key={p.key} className="flex items-start gap-2.5">
+            <span aria-hidden className={cn("mt-1 size-2.5 shrink-0 rounded-[2px]", p.cls)} />
+            <div>
+              <dt className="text-[12px] text-muted">{p.label}</dt>
+              <dd className="mt-0.5 font-mono text-[15px] font-medium tabular-nums">{fmtNum(p.value)}</dd>
+            </div>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
+
+const SHELTER_BAR: Record<string, string> = { ok: "bg-ok", lime: "bg-lime", warn: "bg-warn", caution: "bg-caution", danger: "bg-danger", neutral: "bg-neutral", info: "bg-info", violet: "bg-violet" };
 
 function CheckInPanel({ shelterId }: { shelterId: number }) {
   const { data: roster, error, refetch } = useRoster(shelterId);

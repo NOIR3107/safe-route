@@ -1,5 +1,5 @@
 import { Plus, Route as RouteIcon } from "lucide-react";
-import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import { MapListLayout } from "@/components/layout/MapListLayout";
 import type { MapSelection } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import { ROUTE_RISK_LEVELS, type RouteRiskLevel } from "@/api/schemas";
@@ -82,6 +82,17 @@ export function RoutesPage() {
         icon={RouteIcon}
         title="Routes"
         description="Road corridors and their status state machine Open → Congested → Blocked → Cleared (FR-04). Blocking a route in use re-plans only the groups on it."
+        stats={
+          data
+            ? [
+                { label: "Corridors", value: data.length },
+                { label: "Open or cleared", value: data.filter((r) => r.status === "Open" || r.status === "Cleared").length, tone: "ok" },
+                { label: "Congested", value: data.filter((r) => r.status === "Congested").length, tone: data.some((r) => r.status === "Congested") ? "warn" : undefined },
+                { label: "Blocked or flooded", value: data.filter((r) => r.status === "Blocked" || r.status === "Flooded").length, tone: data.some((r) => r.status === "Blocked" || r.status === "Flooded") ? "danger" : undefined },
+                { label: "People on routes", value: fmtNum([...usage.values()].reduce((a, b) => a + b, 0)), sub: "scheduled or moving" },
+              ]
+            : undefined
+        }
         actions={
           can("route:write") ? (
             <Button onClick={() => setAdding(true)}>
@@ -90,8 +101,7 @@ export function RoutesPage() {
           ) : null
         }
       />
-      <div className="space-y-4 p-4 sm:p-6">
-        <EmbeddedMap focus={focus ?? undefined} />
+      <MapListLayout focus={focus ?? undefined}>
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
             <Input aria-label="Search routes" placeholder="Search route, place or bridge…" value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
@@ -104,7 +114,7 @@ export function RoutesPage() {
               ))}
             </Select>
             <label className="flex items-center gap-1.5 text-sm">
-              <input type="checkbox" checked={onlyUsed} onChange={(e) => setOnlyUsed(e.target.checked)} className="accent-[var(--color-accent)]" />
+              <input type="checkbox" checked={onlyUsed} onChange={(e) => setOnlyUsed(e.target.checked)} className="accent-brand" />
               In use by the plan
             </label>
             <span className="ml-auto text-xs text-muted">{rows.length} routes</span>
@@ -166,7 +176,7 @@ export function RoutesPage() {
             </Table>
           )}
         </Card>
-      </div>
+      </MapListLayout>
       <EntityFormDialog
         open={adding}
         onOpenChange={setAdding}

@@ -32,13 +32,15 @@ export function PublicPage() {
 
   return (
     <div className="min-h-full bg-bg">
-      <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
-          <LogoMark />
-          <p className="font-semibold tracking-[-0.01em]">SafeRoute</p>
+      <header className="sticky top-0 z-10 border-b border-border/70 bg-bg/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-2xl items-center gap-2.5 px-4">
+          <Link to="/" className="flex items-center gap-2.5" aria-label="SafeRoute home">
+            <LogoMark />
+            <span className="font-semibold tracking-[-0.02em]">SafeRoute</span>
+          </Link>
           <div className="ml-auto flex items-center gap-1">
             <Languages className="size-4 text-muted" aria-hidden />
-            <div role="radiogroup" aria-label={t.language} className="flex rounded-md border border-border bg-surface-2 p-0.5">
+            <div role="radiogroup" aria-label={t.language} className="flex rounded-md border border-border bg-bg p-0.5">
               {(Object.keys(LANGUAGE_NAMES) as Lang[]).map((l) => (
                 <button
                   key={l}
@@ -46,7 +48,7 @@ export function PublicPage() {
                   aria-checked={lang === l}
                   lang={l}
                   onClick={() => setLang(l)}
-                  className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-sm transition-colors ${lang === l ? "bg-surface font-medium shadow-[0_1px_2px_rgb(0_0_0/0.12)]" : "text-muted hover:text-fg"}`}
+                  className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-sm transition-colors ${lang === l ? "bg-surface-2 font-medium text-fg ring-1 ring-border" : "text-muted hover:text-fg"}`}
                 >
                   {LANGUAGE_NAMES[l]}
                 </button>
@@ -59,10 +61,10 @@ export function PublicPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl space-y-5 px-4 py-6" lang={lang}>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t.title}</h1>
-          <p className="mt-1 text-muted">{t.subtitle}</p>
+      <main className="mx-auto max-w-2xl space-y-6 px-4 pt-12 pb-16 sm:pt-16" lang={lang}>
+        <div className="animate-rise">
+          <h1 className="text-[2rem] leading-[1.1] font-semibold tracking-[-0.035em] text-balance sm:text-[2.5rem]">{t.title}</h1>
+          <p className="mt-3 max-w-[56ch] text-[15.5px] leading-relaxed text-muted">{t.subtitle}</p>
         </div>
 
         <form
@@ -76,14 +78,14 @@ export function PublicPage() {
           <label htmlFor="lookup" className="sr-only">
             {t.placeholder}
           </label>
-          <Input id="lookup" value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.placeholder} className="h-11 text-base" inputMode="text" autoComplete="off" />
-          <Button type="submit" size="lg" disabled={!input.trim()}>
+          <Input id="lookup" value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.placeholder} className="h-13 rounded-lg px-4 text-[16px] shadow-panel" inputMode="text" autoComplete="off" />
+          <Button type="submit" size="lg" className="h-13 rounded-lg px-5 text-[15px]" disabled={!input.trim()}>
             <Search /> {t.search}
           </Button>
         </form>
-        <p className="-mt-3 text-xs text-muted">{t.tryDemo}</p>
+        <p className="-mt-3.5 px-1 text-[12.5px] text-muted">{t.tryDemo}</p>
 
-        <div className="flex items-start gap-2 rounded-lg border border-warn/40 bg-warn/10 p-3 text-sm text-warn-fg" role="note">
+        <div className="flex items-start gap-3 rounded-lg border border-warn/40 bg-warn/10 px-4 py-3.5 text-[14px] leading-relaxed text-warn-fg" role="note">
           <LifeBuoy className="mt-0.5 size-4 shrink-0" aria-hidden />
           {t.safety}
         </div>
@@ -104,20 +106,20 @@ export function PublicPage() {
           )}
         </section>
 
-        <Card className="p-4">
-          <h2 className="flex items-center gap-2 font-semibold">
+        <Card className="p-5">
+          <h2 className="flex items-center gap-2 text-[15px] font-semibold">
             <Phone className="size-4" aria-hidden /> {t.helplines}
           </h2>
-          <ul className="mt-2 grid gap-2 sm:grid-cols-3">
+          <ul className="mt-3 grid gap-2 sm:grid-cols-3">
             {[
               ["112", t.helpEmergency],
               ["1070", t.helpState],
               ["1913", t.helpCity],
             ].map(([n, label]) => (
               <li key={n}>
-                <a href={`tel:${n}`} className="flex items-center justify-between rounded-lg border border-border bg-surface-2/60 px-3 py-2 hover:bg-surface-2">
+                <a href={`tel:${n}`} className="flex min-h-14 items-center justify-between gap-3 rounded-lg border border-border bg-bg/50 px-4 py-3 transition-colors hover:border-border-strong hover:bg-surface-2">
                   <span className="text-sm">{label}</span>
-                  <span className="font-mono text-lg font-semibold">{n}</span>
+                  <span className="font-mono text-xl font-medium tracking-[-0.02em]">{n}</span>
                 </a>
               </li>
             ))}
@@ -150,14 +152,14 @@ function ResultCard({ r, t, lang }: { r: PublicLookupResult; t: Dict; lang: Lang
   if (r.household_id == null || r.needs.pets) bring.push({ icon: PawPrint, text: t.pets });
 
   return (
-    <Card className="overflow-hidden" data-testid="public-result">
+    <Card className="animate-rise overflow-hidden shadow-float" data-testid="public-result">
       <div className="p-5">
         <p className="text-[13px] font-medium text-muted">
           {r.household_id ? t.yourShelter : t.areaShelter} · {r.zone_name} ({r.zone_code})
         </p>
         {r.shelter ? (
           <>
-            <h2 className="mt-1 text-xl font-semibold">{r.shelter.name}</h2>
+            <h2 className="mt-1.5 text-[1.5rem] leading-tight font-semibold tracking-[-0.025em]">{r.shelter.name}</h2>
             <p className="flex items-center gap-1.5 text-sm text-muted">
               <MapPin className="size-4" aria-hidden /> {t.location}: {r.shelter.location} ·{" "}
               <a className="inline-flex items-center gap-1 underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg" href={`https://www.openstreetmap.org/?mlat=${r.shelter.latitude}&mlon=${r.shelter.longitude}#map=16/${r.shelter.latitude}/${r.shelter.longitude}`} target="_blank" rel="noreferrer">

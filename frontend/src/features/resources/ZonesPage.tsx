@@ -1,5 +1,5 @@
 import { Accessibility, Baby, HeartPulse, Map as MapIcon, Pencil, PersonStanding, Plus } from "lucide-react";
-import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import { MapListLayout } from "@/components/layout/MapListLayout";
 import type { MapSelection } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import type { ZoneView } from "@/api/extensions";
@@ -44,6 +44,14 @@ export function ZonesPage() {
     [data, q, sev],
   );
 
+  const totals = useMemo(() => {
+    const zs = data ?? [];
+    const pop = zs.reduce((s, z) => s + z.population, 0);
+    const evac = zs.reduce((s, z) => s + z.evacuated_count, 0);
+    const vulnerable = zs.reduce((s, z) => s + z.vulnerable.elderly + z.vulnerable.children + z.vulnerable.disabled + z.vulnerable.medical, 0);
+    return { zones: zs.length, pop, evac, atRisk: pop - evac, vulnerable, households: zs.reduce((s, z) => s + z.household_count, 0) };
+  }, [data]);
+
   const submit = (v: FormValues) => {
     const body = {
       name: v.name!.trim(),
@@ -68,6 +76,17 @@ export function ZonesPage() {
         icon={MapIcon}
         title="Affected Zones"
         description="Severity, population, vulnerable groups and households (FR-02)."
+        stats={
+          data
+            ? [
+                { label: "Zones", value: totals.zones },
+                { label: "Still at risk", value: fmtNum(totals.atRisk), sub: `of ${fmtNum(totals.pop)} people`, tone: totals.atRisk > 0 ? "danger" : "ok" },
+                { label: "Evacuated", value: fmtPct(totals.pop ? totals.evac / totals.pop : 0) },
+                { label: "Households", value: fmtNum(totals.households) },
+                { label: "Vulnerable people", value: fmtNum(totals.vulnerable), sub: "elderly, children, disabled, medical" },
+              ]
+            : undefined
+        }
         actions={
           can("zone:write") ? (
             <Button onClick={() => setEditing("new")}>
@@ -76,8 +95,7 @@ export function ZonesPage() {
           ) : null
         }
       />
-      <div className="space-y-4 p-4 sm:p-6">
-        <EmbeddedMap focus={focus ?? undefined} />
+      <MapListLayout focus={focus ?? undefined} footnote="Households are always kept together: the engine never splits a household across shelters or vehicles.">
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
             <Input aria-label="Search zones" placeholder="Search name or code…" value={q} onChange={(e) => setQ(e.target.value)} className="w-56" />
@@ -160,8 +178,7 @@ export function ZonesPage() {
             </Table>
           )}
         </Card>
-        <p className="mt-3 text-xs text-muted">Households are always kept together: the engine never splits a household across shelters or vehicles.</p>
-      </div>
+      </MapListLayout>
       <EntityFormDialog
         open={editing != null}
         onOpenChange={(o) => !o && setEditing(null)}

@@ -1,6 +1,6 @@
 import { useIsMutating } from "@tanstack/react-query";
 import { AlertOctagon, ChevronRight, GitCompare, ListChecks, RefreshCw, ShieldCheck, Play } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { AssignmentView, StrategyId } from "@/api/extensions";
 import { EmptyState, ErrorState, PageHeader, TableSkeleton } from "@/components/common";
@@ -57,14 +57,14 @@ export function PlanPage() {
   };
 
   const strategyToggle = (
-    <div role="radiogroup" aria-label="Allocation strategy" className="inline-flex rounded-lg border border-border bg-surface-2 p-1">
+    <div role="radiogroup" aria-label="Allocation strategy" className="inline-flex h-9 items-center rounded-md border border-border bg-bg p-0.5">
       {(["greedy", "min-cost-flow"] as StrategyId[]).map((s) => (
         <button
           key={s}
           role="radio"
           aria-checked={strategy === s}
           onClick={() => setStrategy(s)}
-          className={cn("cursor-pointer rounded-md px-3 py-1 text-xs font-medium", strategy === s ? "bg-surface text-fg shadow-sm" : "text-muted hover:text-fg")}
+          className={cn("h-full cursor-pointer rounded-[5px] px-3 text-[12.5px] font-medium transition-colors", strategy === s ? "bg-surface-2 text-fg shadow-panel ring-1 ring-border" : "text-muted hover:text-fg")}
         >
           {STRATEGY_LABEL[s]}
         </button>
@@ -86,6 +86,17 @@ export function PlanPage() {
             "Zone → shelter assignments proposed by the allocation engine"
           )
         }
+        stats={
+          version
+            ? [
+                { label: "Status", value: <ApprovalBadge state={version.status === "Approved" ? "Approved" : "Proposed"} /> },
+                { label: "People allocated", value: fmtNum(version.metrics.people_allocated) },
+                { label: "Unallocated", value: fmtNum(version.metrics.people_unallocated), tone: version.metrics.people_unallocated > 0 ? "danger" : "ok" },
+                { label: "Average arrival", value: fmtMinutes(version.metrics.avg_eta), sub: `worst ${fmtMinutes(version.metrics.worst_eta)}` },
+                { label: "Assignments", value: version.metrics.assignments, sub: `${version.metrics.vehicles_used} vehicles` },
+              ]
+            : undefined
+        }
         actions={
           <>
             {strategyToggle}
@@ -106,17 +117,7 @@ export function PlanPage() {
           </>
         }
       />
-      <div className="space-y-4 p-4 sm:p-6">
-        {version ? (
-          <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface md:grid-cols-5 [&>*]:border-border max-md:[&>*:nth-child(odd)]:border-r max-md:[&>*:nth-child(-n+4)]:border-b md:[&>*:not(:last-child)]:border-r">
-            <Summary label="Status" value={<ApprovalBadge state={version.status === "Approved" ? "Approved" : "Proposed"} />} />
-            <Summary label="People allocated" value={fmtNum(version.metrics.people_allocated)} />
-            <Summary label="Unallocated" value={fmtNum(version.metrics.people_unallocated)} danger={version.metrics.people_unallocated > 0} />
-            <Summary label="Avg / worst arrival" value={`${fmtMinutes(version.metrics.avg_eta)} / ${fmtMinutes(version.metrics.worst_eta)}`} />
-            <Summary label="Assignments · vehicles" value={`${version.metrics.assignments} · ${version.metrics.vehicles_used}`} />
-          </div>
-        ) : null}
-
+      <div className="space-y-4 p-4 sm:p-7">
         <StrategyComparisonPanel enabled={compare} />
 
         {version && version.unallocated.length > 0 ? (
@@ -272,14 +273,3 @@ export function PlanPage() {
     </div>
   );
 }
-
-/** One cell of the summary strip above the table: a single bordered row split by rules, not five cards. */
-function Summary({ label, value, danger }: { label: string; value: ReactNode; danger?: boolean }) {
-  return (
-    <div className={cn("min-w-0 px-4 py-3", danger && "bg-danger/8")}>
-      <p className="truncate text-xs text-muted">{label}</p>
-      <div className={cn("mt-1 truncate text-[15px] font-semibold tabular-nums", danger && "text-danger-fg")}>{value}</div>
-    </div>
-  );
-}
-
