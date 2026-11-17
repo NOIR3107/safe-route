@@ -700,6 +700,7 @@ def deliver_household(state: PlanState, h: Household, shelter_id: int, status: s
         return
     h.status = status
     h.shelter_id = shelter_id
+    h.arrived_minute = state.minute
     s = state.repos.shelters.get(shelter_id)
     if s:
         s.current_occupancy = min(s.capacity, s.current_occupancy + h.size)

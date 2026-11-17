@@ -100,6 +100,8 @@ class Household(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="Awaiting")
     shelter_id: Mapped[int | None] = mapped_column(ForeignKey("shelters.shelter_id", ondelete="SET NULL"))  # where they arrived
     walk_in: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Operation minute (T+) the household reached a shelter; feeds the "evacuated over time" trend.
+    arrived_minute: Mapped[int | None] = mapped_column(Integer)
 
     members: Mapped[list[HouseholdMember]] = relationship(
         order_by="HouseholdMember.position", cascade="all, delete-orphan", lazy="selectin"

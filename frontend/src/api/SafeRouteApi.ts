@@ -1,13 +1,12 @@
-// Every screen gets its data through this interface.
-//   MockApi - runs in the browser, seeded, saved in IndexedDB   (VITE_API_MODE=mock)
-//   HttpApi - the FastAPI backend in this repo                   (VITE_API_MODE=live)
-// [ext] = needs a new backend endpoint (docs/api-extensions.md). HttpApi throws NotSupportedError
-// for those for now.
+// Every screen gets its data through this interface, implemented by HttpApi against the FastAPI
+// backend (/api/v1). The browser never talks to a raw data feed: the backend's database is the source
+// of truth, and the WebSocket in live.ts only says what changed.
 import type {
   AssignmentView,
   DrillEvent,
   DrillScenarioSummary,
   DrillState,
+  Facility,
   Household,
   OpsEvent,
   PlanView,
@@ -43,8 +42,7 @@ import type {
   VehicleCreate,
   VehicleUpdate,
 } from "./schemas";
-
-export type ApiMode = "mock" | "live";
+import type { Clock, ResourceAllocation, RoadSegment, Timeline } from "./viewSchemas";
 
 export class ApiError extends Error {
   constructor(
@@ -53,13 +51,6 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = "ApiError";
-  }
-}
-
-export class NotSupportedError extends ApiError {
-  constructor(feature: string) {
-    super(501, `"${feature}" needs a backend endpoint that is not implemented yet (see docs/api-extensions.md).`);
-    this.name = "NotSupportedError";
   }
 }
 
@@ -82,7 +73,8 @@ export type DrillAction =
   | { type: "resume" }
   | { type: "speed"; speed: number }
   | { type: "replay" }
-  | { type: "reset" };
+  | { type: "reset" }
+  | { type: "end" };
 
 export interface ShelterRoster {
   expected: Household[];
@@ -90,32 +82,31 @@ export interface ShelterRoster {
 }
 
 export interface SafeRouteApi {
-  readonly mode: ApiMode;
-  /** Notifies listeners whenever server-side state changes (mock pushes; live relies on polling). */
-  subscribe(listener: () => void): () => void;
-
   /* auth */
   login(email: string, password: string): Promise<Token>;
   me(): Promise<SessionUser>;
   demoAccounts(): Promise<DemoAccount[]>;
 
-  /* backend reads */
+  /* reads */
+  clock(): Promise<Clock>;
   dashboardSummary(): Promise<DashboardSummary>;
+  /** Real history for the dashboard sparklines. */
+  timeline(): Promise<Timeline>;
   listDisasters(): Promise<Disaster[]>;
   listUsers(): Promise<User[]>;
   listResources(): Promise<Resource[]>;
   listNotifications(): Promise<Notification[]>;
   markNotificationRead(id: number): Promise<Notification>;
   listAudit(): Promise<AuditLog[]>;
-
-  /* views = backend entity + [ext] fields */
   listZones(): Promise<ZoneView[]>;
   listShelters(): Promise<ShelterView[]>;
   listRoutes(): Promise<RouteView[]>;
+  listSegments(): Promise<RoadSegment[]>;
   listVehicles(): Promise<VehicleView[]>;
   listTeams(): Promise<TeamView[]>;
+  opsEvents(): Promise<OpsEvent[]>;
 
-  /* backend writes */
+  /* master data (FR-01..05) */
   createZone(body: AffectedZoneCreate): Promise<ZoneView>;
   updateZone(id: number, body: AffectedZoneUpdate): Promise<ZoneView>;
   createShelter(body: ShelterCreate): Promise<ShelterView>;
@@ -127,43 +118,40 @@ export interface SafeRouteApi {
   createTeam(body: RescueTeamCreate): Promise<TeamView>;
   updateTeam(id: number, body: RescueTeamUpdate): Promise<TeamView>;
 
-  /** State transitions that also fire re-planning events (RouteBlocked / ShelterClosed / ShelterFull). */
+  /** Status changes that re-plan the affected groups on the server (FR-10). */
   transitionRoute(id: number, status: RouteStatus, reason?: string): Promise<RouteView>;
   transitionShelter(id: number, status: ShelterStatus, reason?: string): Promise<ShelterView>;
+  setFacilities(shelterId: number, facilities: Facility[], availability: "Available" | "Unavailable", reason?: string): Promise<ShelterView>;
 
-  /* planning */
+  /* planning (FR-06..10) */
   activePlan(): Promise<PlanView | null>;
   listAssignments(version?: number): Promise<AssignmentView[]>;
-  generatePlan(strategy: StrategyId): Promise<PlanView>; // POST /evacuations/generate
-  compareStrategies(): Promise<StrategyComparison>; // [ext]
-  approveVersion(version: number): Promise<PlanView>; // [ext]
-  overrideAssignment(assignmentId: number, shelterId: number, reason: string): Promise<PlanView>; // [ext]
+  generatePlan(strategy: StrategyId): Promise<PlanView>;
+  compareStrategies(): Promise<StrategyComparison>;
+  approveVersion(version: number): Promise<PlanView>;
+  overrideAssignment(assignmentId: number, shelterId: number, reason: string): Promise<PlanView>;
+  resourceAllocations(): Promise<ResourceAllocation[]>;
 
-  /* operations */
-  opsEvents(): Promise<OpsEvent[]>; // [ext]
-  clock(): Promise<{ sim_minute: number }>; // [ext]
-
-  /* field team [ext] */
+  /* field team */
   fieldTasks(): Promise<AssignmentView[]>;
   assignmentHouseholds(assignmentId: number): Promise<Household[]>;
   markPickedUp(assignmentId: number, householdIds: string[]): Promise<void>;
   markArrived(assignmentId: number): Promise<void>;
+  reportPosition(vehicleId: number, latitude: number, longitude: number): Promise<void>;
 
-  /* shelter operations [ext] */
+  /* shelter operations */
   shelterRoster(shelterId: number): Promise<ShelterRoster>;
   checkIn(shelterId: number, token: string): Promise<CheckInResult>;
   registerWalkIn(shelterId: number, headName: string, people: number): Promise<CheckInResult>;
   reunificationSearch(query: string): Promise<ReunificationHit[]>;
 
-  /* public [ext] (no auth) */
+  /* public (no login) */
   publicLookup(query: string): Promise<PublicLookupResult[]>;
 
-  /* drills [ext] */
+  /* drills: run on a copy of live data on the server */
   drillState(): Promise<DrillState>;
   scenarios(): Promise<DrillScenarioSummary[]>;
   loadScenario(id: string): Promise<DrillState>;
   drillControl(action: DrillAction): Promise<DrillState>;
-  advanceClock(minutes: number): Promise<DrillState>;
   injectEvent(event: Omit<DrillEvent, "id" | "at_minute">): Promise<DrillState>;
-  resetDemo(): Promise<void>;
 }

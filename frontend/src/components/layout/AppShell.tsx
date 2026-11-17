@@ -3,7 +3,6 @@ import {
   Building2,
   Bus,
   Globe,
-  Globe2,
   History,
   LayoutDashboard,
   ListChecks,
@@ -12,6 +11,8 @@ import {
   Menu,
   Moon,
   Network,
+  PanelLeftClose,
+  PanelLeftOpen,
   PlayCircle,
   Route as RouteIcon,
   ScanLine,
@@ -26,7 +27,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { api, apiMode } from "@/api/client";
+import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,12 +39,13 @@ import {
 } from "@/components/ui/overlay";
 import type { DisasterSeverity } from "@/api/schemas";
 import { Wordmark } from "@/components/Logo";
-import type { Tone } from "@/lib/semantic";
 import { Badge } from "@/components/ui/primitives";
-import { useDisasters, useDrill, useMarkRead, useNotifications } from "@/hooks/queries";
-import { useDrillTicker, useLogin, useSession } from "@/hooks/session";
+import { useDisasters, useMarkRead, useNotifications } from "@/hooks/queries";
+import { useLogin, useSession } from "@/hooks/session";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OpsStatus } from "./OpsStatus";
 import { ROLE_LABEL, rolesFor, type Permission } from "@/lib/rbac";
-import { cn, errorMessage, fmtSim, fmtTime } from "@/lib/utils";
+import { cn, errorMessage, fmtTime } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 import { toast } from "sonner";
@@ -64,7 +66,6 @@ const NAV: { section: string; items: NavItem[] }[] = [
       { to: "/plan", label: "Allocation Plan", icon: ListChecks, permission: "plan:view" },
       { to: "/plan/versions", label: "Plan Versions", icon: History, permission: "plan:view" },
       { to: "/drill", label: "Simulation / Drill", icon: PlayCircle, permission: "drill:run" },
-      { to: "/gods-eye", label: "God's Eye View (3D)", icon: Globe2, permission: "dashboard:view" },
     ],
   },
   {
@@ -96,7 +97,8 @@ const NAV: { section: string; items: NavItem[] }[] = [
 export function AppShell() {
   const { user, can } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
-  useDrillTicker();
+  const collapsed = useUiStore((s) => s.navCollapsed);
+  const setCollapsed = useUiStore((s) => s.setNavCollapsed);
   if (!user) return <Navigate to="/login" replace />;
 
   const visible = NAV.map((s) => ({
@@ -104,11 +106,11 @@ export function AppShell() {
     items: s.items.filter((i) => (i.permission ? can(i.permission) : true)),
   })).filter((s) => s.items.length > 0);
 
-  const sidebar = (
-    <nav aria-label="Main" className="flex h-full flex-col gap-5 overflow-y-auto px-3 pt-5 pb-3">
+  const sidebar = (rail: boolean) => (
+    <nav aria-label="Main" className={cn("flex h-full flex-col gap-5 overflow-y-auto pt-5 pb-3", rail ? "px-2" : "px-3")}>
       {visible.map((s) => (
         <div key={s.section}>
-          <p className="px-2 pb-1 text-xs font-medium text-muted/80">{s.section}</p>
+          {rail ? <div className="mx-2 mb-2 border-t border-border" aria-hidden /> : <p className="px-2 pb-1 text-xs font-medium text-muted/80">{s.section}</p>}
           <ul className="space-y-0.5">
             {s.items.map((i) => (
               <li key={i.to}>
@@ -116,28 +118,34 @@ export function AppShell() {
                   to={i.to}
                   end={i.to === "/" || i.to === "/plan"}
                   onClick={() => setMobileOpen(false)}
+                  title={rail ? i.label : undefined}
+                  aria-label={rail ? i.label : undefined}
                   className={({ isActive }) =>
                     cn(
-                      "relative flex items-center gap-2.5 rounded-md px-2 py-[7px] text-[13.5px] transition-colors duration-100",
+                      "relative flex items-center gap-2.5 rounded-md py-[7px] text-[13.5px] transition-colors duration-100",
+                      rail ? "justify-center px-0" : "px-2",
                       isActive
-                        ? "bg-surface-2 font-medium text-fg before:absolute before:inset-y-1.5 before:-left-3 before:w-[3px] before:rounded-r-sm before:bg-brand"
+                        ? cn(
+                            "bg-surface-2 font-medium text-fg before:absolute before:inset-y-1.5 before:w-[3px] before:rounded-r-sm before:bg-signal",
+                            rail ? "before:-left-2" : "before:-left-3",
+                          )
                         : "text-muted hover:bg-surface-2/70 hover:text-fg",
                     )
                   }
                 >
                   <i.icon className="size-4 shrink-0 opacity-80" strokeWidth={1.75} aria-hidden />
-                  {i.label}
+                  {rail ? null : i.label}
                 </NavLink>
               </li>
             ))}
           </ul>
         </div>
       ))}
-      <div className="-mx-3 mt-auto flex items-center gap-2.5 border-t border-border px-5 pt-3 text-xs text-muted">
+      <div className={cn("mt-auto flex items-center gap-2.5 border-t border-border pt-3 text-xs text-muted", rail ? "-mx-2 justify-center px-2" : "-mx-3 px-5")}>
         <span aria-hidden className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-fg ring-1 ring-border">
           {initials(user.name)}
         </span>
-        <div className="min-w-0 leading-snug">
+        <div className={cn("min-w-0 leading-snug", rail && "sr-only")}>
           <p className="truncate font-medium text-fg">{user.name}</p>
           <p className="truncate">
             {ROLE_LABEL[user.role]}
@@ -156,15 +164,28 @@ export function AppShell() {
       </a>
       <TopBar onMenu={() => setMobileOpen((o) => !o)} menuOpen={mobileOpen} />
       <div className="flex min-h-0 flex-1">
-        <aside className="hidden w-60 shrink-0 border-r border-border bg-surface lg:block">{sidebar}</aside>
+        <aside className={cn("relative hidden shrink-0 border-r border-border bg-surface lg:block", collapsed ? "w-14" : "w-60")}>
+          {sidebar(collapsed)}
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+            title={collapsed ? "Expand navigation" : "Collapse navigation"}
+            className="absolute top-2 -right-3 z-30 flex size-6 cursor-pointer items-center justify-center rounded-full border border-border bg-surface text-muted transition-colors hover:text-fg"
+          >
+            {collapsed ? <PanelLeftOpen className="size-3.5" strokeWidth={1.75} /> : <PanelLeftClose className="size-3.5" strokeWidth={1.75} />}
+          </button>
+        </aside>
         {mobileOpen ? (
           <div className="fixed inset-0 top-14 z-[900] flex lg:hidden">
-            <aside className="w-64 border-r border-border bg-surface shadow-[16px_0_40px_-16px_rgb(0_0_0/0.4)]">{sidebar}</aside>
+            <aside className="w-64 border-r border-border bg-surface shadow-[16px_0_40px_-16px_rgb(0_0_0/0.4)]">{sidebar(false)}</aside>
             <button className="flex-1 bg-black/45" aria-label="Close menu" onClick={() => setMobileOpen(false)} />
           </div>
         ) : null}
         <main id="main" className="min-w-0 flex-1 overflow-y-auto" tabIndex={-1}>
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
@@ -173,11 +194,9 @@ export function AppShell() {
 
 function TopBar({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
   const { data: disasters } = useDisasters();
-  const { data: drill } = useDrill();
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
-  const disaster = disasters?.[0];
-  const running = drill?.phase === "running";
+  const disaster = disasters?.find((d) => d.status === "Active") ?? disasters?.[0];
   return (
     <header className="relative flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-3 sm:px-4">
       {/* The one bold line in the UI: the top edge of every screen carries the incident's severity. */}
@@ -187,24 +206,13 @@ function TopBar({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean })
       </Button>
       <Wordmark sub="Evacuation Command" className="lg:w-[13.5rem]" />
       {disaster ? (
-        <div className="ml-1 hidden min-w-0 items-center gap-2.5 border-l border-border pl-4 md:flex">
+        <div className="ml-1 hidden min-w-0 items-baseline gap-2.5 border-l border-border pl-4 md:flex">
           <p className="truncate text-[13.5px] font-medium">{disaster.title}</p>
-          <Badge tone={SEVERITY_TONE[disaster.severity]}>{disaster.severity}</Badge>
+          <span className={cn("text-xs font-medium", SEVERITY_TEXT[disaster.severity])}>{disaster.severity}</span>
         </div>
       ) : null}
-      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-        {drill && drill.phase !== "idle" ? (
-          <Badge tone={running ? "warn" : "neutral"} className="font-mono tabular-nums" aria-live="polite">
-            <span className="relative flex size-2">
-              {running ? <span className="absolute inline-flex size-full animate-ping rounded-full bg-warn opacity-75" /> : null}
-              <span className={cn("relative inline-flex size-2 rounded-full", running ? "bg-warn" : "bg-neutral")} />
-            </span>
-            {fmtSim(drill.sim_minute)} {running ? `· ${drill.speed}×` : drill.phase === "paused" ? "· paused" : ""}
-          </Badge>
-        ) : null}
-        <Badge tone={apiMode === "mock" ? "violet" : "ok"} className="hidden sm:inline-flex" title={apiMode === "mock" ? "In-browser mock API (VITE_API_MODE=mock)" : "Live FastAPI backend"}>
-          {apiMode === "mock" ? "Mock API" : "Live API"}
-        </Badge>
+      <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
+        <OpsStatus />
         <NotificationsMenu />
         <RoleSwitcher />
         <Button variant="ghost" size="icon-sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
@@ -251,7 +259,12 @@ function NotificationsMenu() {
   );
 }
 
-const SEVERITY_TONE: Record<DisasterSeverity, Tone> = { Low: "ok", Medium: "warn", High: "caution", Critical: "danger" };
+const SEVERITY_TEXT: Record<DisasterSeverity, string> = {
+  Low: "text-muted",
+  Medium: "text-warn-fg",
+  High: "text-caution-fg",
+  Critical: "text-danger-fg",
+};
 const SEVERITY_RULE: Record<DisasterSeverity, string> = { Low: "bg-ok", Medium: "bg-warn", High: "bg-caution", Critical: "bg-danger" };
 
 function initials(name: string): string {

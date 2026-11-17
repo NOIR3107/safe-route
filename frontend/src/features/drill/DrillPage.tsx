@@ -1,58 +1,44 @@
 import { CheckCircle2, CircleDashed, Construction, DoorClosed, FastForward, History, Pause, Play, PlayCircle, PlugZap, RotateCcw, SkipBack, Users, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import type { DrillEvent } from "@/api/extensions";
-import { ConfirmDialog, EmptyState, PageHeader } from "@/components/common";
-import { OpsMap } from "@/components/map/OpsMap";
+import { ConfirmDialog, PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardContent, CardHeader, CardTitle, Input, Label, Progress, Select, Skeleton } from "@/components/ui/primitives";
 import {
-  useAssignments,
   useDrill,
   useDrillControl,
   useInjectEvent,
   useLoadScenario,
-  usePlan,
   useRoutes,
-  useScenarios,
   useShelters,
+  usePlan,
+  useScenarios,
   useSummary,
-  useVehicles,
-  useZones,
 } from "@/hooks/queries";
-import { apiMode } from "@/api/client";
 import { cn, fmtNum, fmtSim, signed } from "@/lib/utils";
 
 const SPEEDS = [1, 4, 8, 16];
+
+const OpsGlobe = lazy(() => import("@/components/map/OpsGlobe"));
 
 export function DrillPage() {
   const { data: drill, isLoading } = useDrill();
   const { data: scenarios } = useScenarios();
   const control = useDrillControl();
   const load = useLoadScenario();
-  const zones = useZones();
-  const shelters = useShelters();
-  const routes = useRoutes();
-  const vehicles = useVehicles();
-  const assignments = useAssignments();
   const { data: plan } = usePlan();
   const { data: summary } = useSummary();
   const [confirm, setConfirm] = useState<null | "reset" | { load: string }>(null);
   const [pick, setPick] = useState<string>("");
 
   const scenario = scenarios?.find((s) => s.id === drill?.scenario_id) ?? null;
-  const duration = scenario?.duration_minutes ?? 150;
+  const duration = drill?.duration_minutes ?? scenario?.duration_minutes ?? 150;
+  const inDrill = drill?.mode === "drill";
   const phase = drill?.phase ?? "idle";
   const latest = plan?.current_version ?? null;
 
-  if (apiMode === "live") {
-    return (
-      <div>
-        <PageHeader icon={PlayCircle} title="Simulation / Drill" />
-        <EmptyState title="Drills run on the in-browser engine">Set VITE_API_MODE=mock to run drills; the drill endpoints are proposed in docs/api-extensions.md.</EmptyState>
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-full flex-col">
@@ -90,7 +76,7 @@ export function DrillPage() {
                 </Button>
               ) : (
                 <Button onClick={() => control.mutate({ type: "start" })} disabled={phase === "finished" || isLoading} data-testid="drill-play">
-                  <Play /> {plan ? "Start drill" : "Generate plan & start"}
+                  <Play /> {inDrill ? "Start" : "Start drill on a copy of live data"}
                 </Button>
               )}
               <div role="radiogroup" aria-label="Playback speed" className="inline-flex rounded-lg border border-border bg-surface-2 p-1">
@@ -100,6 +86,7 @@ export function DrillPage() {
                     role="radio"
                     aria-checked={drill?.speed === s}
                     onClick={() => control.mutate({ type: "speed", speed: s })}
+                    disabled={!inDrill}
                     className={cn("cursor-pointer rounded-md px-2.5 py-1 font-mono text-xs", drill?.speed === s ? "bg-surface text-fg shadow-sm" : "text-muted hover:text-fg")}
                   >
                     {s}×
@@ -113,6 +100,11 @@ export function DrillPage() {
               <Button variant="ghost" onClick={() => setConfirm("reset")}>
                 <RotateCcw /> Reset
               </Button>
+              {inDrill ? (
+                <Button variant="secondary" onClick={() => control.mutate({ type: "end" })} data-testid="drill-end">
+                  End drill, back to live
+                </Button>
+              ) : null}
               <div className="ml-auto text-right">
                 <p className="font-mono text-2xl font-semibold tabular-nums" aria-live="polite" data-testid="sim-clock">
                   {fmtSim(drill?.sim_minute ?? 0)}
@@ -126,11 +118,9 @@ export function DrillPage() {
           </Card>
 
           <div className="relative min-h-[420px] flex-1 overflow-hidden rounded-lg border border-border">
-            {zones.data && shelters.data && routes.data ? (
-              <OpsMap zones={zones.data} shelters={shelters.data} routes={routes.data} vehicles={vehicles.data} assignments={assignments.data} />
-            ) : (
-              <Skeleton className="h-full w-full" />
-            )}
+            <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <OpsGlobe variant="embedded" />
+            </Suspense>
           </div>
         </div>
 

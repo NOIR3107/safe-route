@@ -403,3 +403,40 @@ def dashboard_summary(repos: Repos) -> dict:
             "total_assignments": len(version.assignment_ids) if version else 0,
         },
     }
+
+
+def timeline(repos: Repos, points: int = 12) -> dict:
+    """Real history for the dashboard sparklines.
+
+    evacuated: people at shelters by operation minute (from each household's arrival minute),
+    sampled at `points` evenly spaced minutes from the incident start to now.
+    versions: the metrics of every plan version at the minute it was created.
+    """
+    now = now_minute(repos)
+    arrivals = sorted((h.arrived_minute, h.size) for h in repos.households.list() if h.delivered and h.arrived_minute is not None)
+    start = 0
+    step = max(1, (now - start) // max(1, points - 1)) if now > start else 1
+    samples, total, i = [], 0, 0
+    for k in range(points):
+        minute = min(now, start + k * step)
+        while i < len(arrivals) and arrivals[i][0] <= minute:
+            total += arrivals[i][1]
+            i += 1
+        samples.append([minute, total])
+    plan = repos.plans.current_plan()
+    versions = []
+    for v in repos.plans.versions(plan.plan_id) if plan else []:
+        m = v.metrics
+        versions.append(
+            {
+                "version": v.version,
+                "minute": v.sim_minute,
+                "avg_eta": m.get("avg_eta", 0),
+                "worst_eta": m.get("worst_eta", 0),
+                "people_unallocated": m.get("people_unallocated", 0),
+                "high_priority_served": m.get("high_priority_served", 0),
+                "high_priority_total": m.get("high_priority_total", 0),
+            }
+        )
+    affected = sum(z.population for z in repos.zones.list())
+    return {"now": now, "affected": affected, "evacuated": samples, "versions": versions}

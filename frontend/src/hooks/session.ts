@@ -1,11 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, apiMode } from "@/api/client";
+import { api } from "@/api/client";
 import { can, homeFor, type Permission } from "@/lib/rbac";
 import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
-import { useDrill } from "./queries";
 
 export function useSession() {
   const user = useAuthStore((s) => s.user);
@@ -42,24 +41,6 @@ export function useLogin() {
   );
 }
 
-/** Advances the simulation clock while a drill is running (1 tick per second × speed). */
-export function useDrillTicker(): void {
-  const { data } = useDrill();
-  const running = data?.phase === "running";
-  const speed = data?.speed ?? 1;
-  useEffect(() => {
-    if (!running || apiMode === "live") return;
-    let busy = false;
-    const t = setInterval(() => {
-      if (busy) return;
-      busy = true;
-      api.advanceClock(speed).finally(() => {
-        busy = false;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, [running, speed]);
-}
 
 export function useThemeEffect(): void {
   const theme = useUiStore((s) => s.theme);

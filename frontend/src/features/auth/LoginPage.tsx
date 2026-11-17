@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Globe, LayoutDashboard, LogIn, Moon, ShieldCheck, Smartphone, Sun, Truck, UserCog, type LucideIcon } from "lucide-react";
+import { Building2, HandHeart, HeartPulse, Globe, LayoutDashboard, LogIn, Moon, ShieldCheck, Smartphone, Sun, Truck, UserCog, type LucideIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { api, apiMode } from "@/api/client";
+import { api } from "@/api/client";
 import type { UserRole } from "@/api/schemas";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/Logo";
@@ -19,8 +19,19 @@ const ROLE_INFO: Record<UserRole, { icon: LucideIcon; blurb: string }> = {
   "Shelter Manager": { icon: Building2, blurb: "Own shelter only: check-in, walk-ins, reunification" },
   "Transport Coordinator": { icon: Truck, blurb: "Fleet and route status; read-only plan" },
   "Response Team": { icon: Smartphone, blurb: "Mobile field tasks with offline sync" },
+  "Relief Staff": { icon: HeartPulse, blurb: "Read-only: dashboard, plan and shelters" },
+  "NGO Volunteer": { icon: HandHeart, blurb: "Read-only: dashboard, plan and shelters" },
 };
-const ORDER: UserRole[] = ["Evacuation Coordinator", "Emergency Authority", "Shelter Manager", "Response Team", "Transport Coordinator", "Admin"];
+const ORDER: UserRole[] = [
+  "Evacuation Coordinator",
+  "Emergency Authority",
+  "Shelter Manager",
+  "Response Team",
+  "Transport Coordinator",
+  "Relief Staff",
+  "NGO Volunteer",
+  "Admin",
+];
 
 export function LoginPage() {
   const { user } = useSession();
@@ -107,7 +118,7 @@ export function LoginPage() {
         <div className="mx-auto w-full max-w-xl">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-[15px] font-semibold">Demo mode: sign in as a role</h2>
-            <Badge tone={apiMode === "mock" ? "violet" : "ok"}>{apiMode === "mock" ? "Mock API · seeded Chennai flood" : "Live API"}</Badge>
+            <Badge tone="neutral">Lab accounts</Badge>
           </div>
           <p className="mt-1.5 text-[13px] text-muted">One click per role to see role-based access in action. Switch any time from the top bar.</p>
           <ul className="mt-6 divide-y divide-border overflow-hidden rounded-lg border border-border">

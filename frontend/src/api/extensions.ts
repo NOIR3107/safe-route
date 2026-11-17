@@ -1,7 +1,6 @@
-// Data the frontend needs that the backend doesn't store yet: geometry, households, plan versions,
-// explanations, drills, check-ins, field tasks. Everything is keyed by a backend id (zone_id,
-// shelter_id, ...) so it sits next to the backend tables instead of replacing them.
-// Proposed endpoints for these: docs/api-extensions.md
+// View types: a backend entity plus the derived fields the screens need (geometry, households, plan
+// versions, explanations, drills, check-ins). They match backend/app/services/views.py and are
+// checked at runtime by viewSchemas.ts.
 import type {
   AffectedZone,
   AssignmentStatus,
@@ -68,6 +67,8 @@ export interface ZoneView extends AffectedZone {
   ext: ZoneExt;
   vulnerable: VulnerableCounts;
   household_count: number;
+  /** People in the zone not yet at a shelter. */
+  remaining: number;
 }
 
 /* ------------------------------------------------------------------ shelters */
@@ -100,8 +101,10 @@ export interface RouteExt {
   zone_id: number;
   shelter_id: number;
   path: LatLng[];
-  /** Named road segments this corridor uses; a scenario event can close a segment (e.g. a bridge). */
+  /** Named road segments this corridor uses; an event can close a segment (e.g. a bridge). */
   via: string[];
+  /** "osrm" = real road geometry from the routing service; "schematic" = straight-line sketch. */
+  geometry_source: "schematic" | "osrm";
 }
 
 export interface RouteView extends Route {
@@ -113,6 +116,8 @@ export interface VehicleExt {
   team_id: number | null;
   depot: LatLng;
   position: LatLng;
+  /** gps = reported by a field device; estimated = from the trip timeline; depot = parked. */
+  position_source: "depot" | "estimated" | "gps";
 }
 
 export interface VehicleView extends Vehicle {
@@ -122,6 +127,7 @@ export interface VehicleView extends Vehicle {
 }
 
 export interface TeamView extends RescueTeam {
+  plan_id: number | null;
   vehicle_ids: number[];
 }
 
@@ -342,6 +348,11 @@ export interface DrillState {
   timeline: DrillEvent[];
   fired_event_ids: string[];
   has_snapshot: boolean;
+  /** "drill" while everyone is working on the drill copy of the data. */
+  mode: "live" | "drill";
+  duration_minutes: number;
+  /** true for the seeded stress-test scenarios (not branched from live data). */
+  synthetic: boolean;
 }
 
 /* ------------------------------------------------------------------ public lookup */

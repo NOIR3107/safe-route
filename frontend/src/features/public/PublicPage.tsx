@@ -1,16 +1,17 @@
 import { Baby, Backpack, Clock, ExternalLink, HeartPulse, Home, Languages, LifeBuoy, LogIn, MapPin, Moon, PawPrint, Phone, Pill, Route as RouteIcon, Search, Sun, Users, Accessibility, Glasses } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import type { PublicLookupResult } from "@/api/extensions";
 import { ErrorState } from "@/components/common";
 import { LogoMark } from "@/components/Logo";
-import { OpsMap } from "@/components/map/OpsMap";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, Input, Skeleton } from "@/components/ui/primitives";
 import { usePublicLookup } from "@/hooks/queries";
 import { DICTIONARIES, FACILITY_NAMES, LANGUAGE_NAMES, type Dict } from "@/i18n/dictionaries";
 import { FACILITY_ICON, ROUTE_STATUS } from "@/lib/semantic";
 import { useUiStore, type Lang } from "@/stores/ui";
+
+const GlobeView = lazy(() => import("@/components/map/OpsGlobe").then((m) => ({ default: m.GlobeView })));
 
 export function PublicPage() {
   const lang = useUiStore((s) => s.lang);
@@ -203,13 +204,28 @@ function ResultCard({ r, t, lang }: { r: PublicLookupResult; t: Dict; lang: Lang
       </div>
       {r.route && r.shelter ? (
         <div className="h-56 border-y border-border">
-          <OpsMap
-            routes={[{ route_id: 0, source: "", destination: "", distance_km: 1, travel_time: r.route.travel_time, risk_level: "Low", status: r.route.status, ext: { route_id: 0, zone_id: 0, shelter_id: 0, path: r.route.path, via: [] } }]}
-            highlightRouteIds={[0]}
-            focus={r.route.path}
-            showLegend={false}
-            className="relative h-full w-full"
-          />
+          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+            <GlobeView
+              variant="embedded"
+              data={{
+                routes: [
+                  {
+                    route_id: 0,
+                    source: r.zone_name,
+                    destination: r.shelter?.name ?? "",
+                    distance_km: 1,
+                    travel_time: r.route.travel_time,
+                    risk_level: "Low",
+                    status: r.route.status,
+                    ext: { route_id: 0, zone_id: 0, shelter_id: 0, path: r.route.path, via: [], geometry_source: "osrm" },
+                  },
+                ],
+              }}
+              highlightRouteIds={[0]}
+              focus={{ kind: "route", id: 0 }}
+              className="relative h-full w-full"
+            />
+          </Suspense>
         </div>
       ) : null}
       <div className="p-5">

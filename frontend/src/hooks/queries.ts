@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { api, apiMode } from "@/api/client";
-import type { DrillEvent, StrategyId } from "@/api/extensions";
+import { api } from "@/api/client";
+import type { DrillEvent, Facility, StrategyId } from "@/api/extensions";
+import { startLiveConnection, useLive } from "@/api/live";
 import type { DrillAction } from "@/api/SafeRouteApi";
 import type {
   AffectedZoneCreate,
@@ -20,9 +21,6 @@ import type {
 } from "@/api/schemas";
 import { useAuthStore } from "@/stores/auth";
 import { errorMessage } from "@/lib/utils";
-
-const live = apiMode === "live";
-const poll = live ? 10_000 : false;
 
 export const keys = {
   summary: ["summary"],
@@ -48,49 +46,51 @@ export const keys = {
   roster: (id: number) => ["roster", id] as QueryKey,
   reunify: (q: string) => ["reunify", q] as QueryKey,
   publicLookup: (q: string) => ["public", q] as QueryKey,
+  segments: ["segments"],
+  allocations: ["allocations"],
+  timeline: ["timeline"],
 } as const;
 
-/** Mock API pushes change events; refresh active queries (throttled) so every screen is live. */
-export function useLiveSync(): void {
+/**
+ * Opens the WebSocket once for the whole app. Server "changed" messages refetch the matching
+ * queries, so screens never poll and never fetch on their own.
+ */
+export function useLiveConnection(): void {
   const qc = useQueryClient();
-  useEffect(() => {
-    let pending: ReturnType<typeof setTimeout> | null = null;
-    const unsubscribe = api.subscribe(() => {
-      if (pending) return;
-      pending = setTimeout(() => {
-        pending = null;
-        void qc.invalidateQueries({ predicate: (q) => q.queryKey[0] !== "scenarios" && q.queryKey[0] !== "public" });
-      }, 250);
-    });
-    return () => {
-      unsubscribe();
-      if (pending) clearTimeout(pending);
-    };
-  }, [qc]);
+  useEffect(() => startLiveConnection(qc), [qc]);
 }
 
 /* ---------------- queries */
 
-export const useSummary = () => useQuery({ queryKey: keys.summary, queryFn: () => api.dashboardSummary(), refetchInterval: poll });
+export const useSummary = () => useQuery({ queryKey: keys.summary, queryFn: () => api.dashboardSummary() });
 export const useDisasters = () => useQuery({ queryKey: keys.disasters, queryFn: () => api.listDisasters() });
-export const useZones = () => useQuery({ queryKey: keys.zones, queryFn: () => api.listZones(), refetchInterval: poll });
-export const useShelters = () => useQuery({ queryKey: keys.shelters, queryFn: () => api.listShelters(), refetchInterval: poll });
-export const useRoutes = () => useQuery({ queryKey: keys.routes, queryFn: () => api.listRoutes(), refetchInterval: poll });
-export const useVehicles = () => useQuery({ queryKey: keys.vehicles, queryFn: () => api.listVehicles(), refetchInterval: poll });
+export const useZones = () => useQuery({ queryKey: keys.zones, queryFn: () => api.listZones() });
+export const useShelters = () => useQuery({ queryKey: keys.shelters, queryFn: () => api.listShelters() });
+export const useRoutes = () => useQuery({ queryKey: keys.routes, queryFn: () => api.listRoutes() });
+export const useVehicles = () => useQuery({ queryKey: keys.vehicles, queryFn: () => api.listVehicles() });
 export const useTeams = () => useQuery({ queryKey: keys.teams, queryFn: () => api.listTeams() });
 export const useResources = () => useQuery({ queryKey: keys.resources, queryFn: () => api.listResources() });
-export const usePlan = () => useQuery({ queryKey: keys.plan, queryFn: () => api.activePlan(), refetchInterval: poll });
+export const usePlan = () => useQuery({ queryKey: keys.plan, queryFn: () => api.activePlan() });
 export const useAssignments = (version?: number) =>
-  useQuery({ queryKey: keys.assignments(version), queryFn: () => api.listAssignments(version), refetchInterval: poll });
+  useQuery({ queryKey: keys.assignments(version), queryFn: () => api.listAssignments(version) });
 export const useCompare = (enabled: boolean) =>
   useQuery({ queryKey: keys.compare, queryFn: () => api.compareStrategies(), enabled, retry: false });
-export const useOpsEvents = () => useQuery({ queryKey: keys.events, queryFn: () => api.opsEvents(), refetchInterval: poll });
-export const useClock = () => useQuery({ queryKey: keys.clock, queryFn: () => api.clock() });
+export const useOpsEvents = () => useQuery({ queryKey: keys.events, queryFn: () => api.opsEvents() });
+/** Clock and feed status: pushed by the WebSocket heartbeat, fetched once as a fallback. */
+export function useClock() {
+  const pushed = useLive((s) => s.clock);
+  const q = useQuery({ queryKey: keys.clock, queryFn: () => api.clock(), staleTime: 5_000 });
+  return { ...q, data: pushed ?? q.data };
+}
+export const useTimeline = () => useQuery({ queryKey: keys.timeline, queryFn: () => api.timeline() });
+export const useSegments = () => useQuery({ queryKey: keys.segments, queryFn: () => api.listSegments(), staleTime: Infinity });
+export const useResourceAllocations = (enabled = true) =>
+  useQuery({ queryKey: keys.allocations, queryFn: () => api.resourceAllocations(), enabled, retry: false });
 export const useDrill = () => useQuery({ queryKey: keys.drill, queryFn: () => api.drillState() });
 export const useScenarios = () => useQuery({ queryKey: keys.scenarios, queryFn: () => api.scenarios(), staleTime: Infinity });
 export const useNotifications = () => {
   const token = useAuthStore((s) => s.token);
-  return useQuery({ queryKey: keys.notifications, queryFn: () => api.listNotifications(), enabled: !!token, refetchInterval: poll });
+  return useQuery({ queryKey: keys.notifications, queryFn: () => api.listNotifications(), enabled: !!token });
 };
 export const useAudit = (enabled = true) => useQuery({ queryKey: keys.audit, queryFn: () => api.listAudit(), enabled, retry: false });
 export const useUsers = () => useQuery({ queryKey: keys.users, queryFn: () => api.listUsers(), retry: false });
@@ -151,6 +151,12 @@ export const useDrillControl = () => useApiMutation((a: DrillAction) => api.dril
 export const useLoadScenario = () => useApiMutation((id: string) => api.loadScenario(id), "Scenario loaded");
 export const useInjectEvent = () =>
   useApiMutation((e: Omit<DrillEvent, "id" | "at_minute">) => api.injectEvent(e), (_r, e) => `Injected: ${e.label}`);
+export const useSetFacilities = () =>
+  useApiMutation(
+    (v: { shelterId: number; facilities: Facility[]; availability: "Available" | "Unavailable"; reason?: string }) =>
+      api.setFacilities(v.shelterId, v.facilities, v.availability, v.reason),
+    (r) => `${r.name}: facilities updated`,
+  );
 export const useMarkRead = () => useApiMutation((id: number) => api.markNotificationRead(id));
 export const useCheckIn = () => useApiMutation((v: { shelterId: number; token: string }) => api.checkIn(v.shelterId, v.token));
 export const useWalkIn = () =>

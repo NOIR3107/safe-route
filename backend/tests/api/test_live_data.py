@@ -123,6 +123,26 @@ def test_api26_websocket_says_hello_and_pushes_changes(client, auth):
             raise AssertionError("no change message")
 
 
+def test_api29_timeline_tracks_arrivals_and_versions(client, auth):
+    h = auth("Evacuation Coordinator")
+    client.post(f"{API}/evacuations/generate", headers=h, json={"strategy": "min-cost-flow"})
+    client.post(f"{API}/drill/control", headers=h, json={"type": "start"})
+    with dbs.Drill() as db:
+        from app.core.database import serialize_writes
+        from app.services.drill import advance
+
+        serialize_writes(db)
+        repos = Repos(db, "drill")
+        advance(repos, 60)
+        repos.commit()
+    t = client.get(f"{API}/dashboard/timeline", headers=h).json()
+    assert len(t["evacuated"]) == 12 and t["affected"] == 5350
+    counts = [c for _, c in t["evacuated"]]
+    assert counts == sorted(counts) and counts[-1] > 0  # cumulative, and people did arrive
+    assert [v["version"] for v in t["versions"]][0] == 1 and len(t["versions"]) > 1
+    client.post(f"{API}/drill/control", headers=h, json={"type": "end"})
+
+
 def test_api27_drill_branches_from_live_and_never_changes_it(client, auth):
     h = auth("Evacuation Coordinator")
     client.post(f"{API}/evacuations/generate", headers=h, json={"strategy": "min-cost-flow"})

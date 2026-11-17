@@ -1,6 +1,7 @@
 /**
- * Role-based access control (FR-11). The write permissions mirror the `require_roles([...])`
- * dependencies on the FastAPI routers; like the backend, Admin is always allowed.
+ * Role-based access control (FR-11). A copy of backend/app/core/rbac.py so the UI only shows what a
+ * role can use; the server is what enforces it. Admin is always allowed. Relief Staff and NGO
+ * volunteers are read-only (lab file, Experiment 2 stakeholders).
  */
 import type { UserRole } from "@/api/schemas";
 
@@ -25,8 +26,8 @@ export type Permission =
   | "users:read";
 
 const MATRIX: Record<Permission, UserRole[]> = {
-  "dashboard:view": ["Emergency Authority", "Evacuation Coordinator", "Transport Coordinator"],
-  "plan:view": ["Emergency Authority", "Evacuation Coordinator", "Transport Coordinator"],
+  "dashboard:view": ["Emergency Authority", "Evacuation Coordinator", "Transport Coordinator", "Relief Staff", "NGO Volunteer"],
+  "plan:view": ["Emergency Authority", "Evacuation Coordinator", "Transport Coordinator", "Relief Staff", "NGO Volunteer"],
   "plan:generate": ["Emergency Authority", "Evacuation Coordinator"],
   "plan:approve": ["Emergency Authority", "Evacuation Coordinator"],
   "plan:override": ["Emergency Authority", "Evacuation Coordinator"],
@@ -73,4 +74,6 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   "Shelter Manager": "Shelter Manager",
   "Transport Coordinator": "Transport Coordinator",
   "Response Team": "Field Team",
+  "Relief Staff": "Relief Staff (read-only)",
+  "NGO Volunteer": "NGO Volunteer (read-only)",
 };

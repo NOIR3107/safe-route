@@ -1,9 +1,8 @@
 import { CheckCircle2, ChevronDown, CloudUpload, MapPin, Navigation, RefreshCw, Smartphone, Wifi, WifiOff } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, lazy, Suspense } from "react";
 import { api } from "@/api/client";
 import type { AssignmentView } from "@/api/extensions";
 import { EmptyState, ErrorState } from "@/components/common";
-import { OpsMap } from "@/components/map/OpsMap";
 import { AssignmentStatusBadge, SeverityBadge } from "@/components/status/badges";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, Skeleton } from "@/components/ui/primitives";
@@ -48,6 +47,8 @@ function useSyncEngine(online: boolean) {
 function perform(a: QueuedAction): Promise<void> {
   return a.kind === "pickup" ? api.markPickedUp(a.assignment_id, a.household_ids) : api.markArrived(a.assignment_id);
 }
+
+const GlobeView = lazy(() => import("@/components/map/OpsGlobe").then((m) => ({ default: m.GlobeView })));
 
 export function FieldPage() {
   const { user } = useSession();
@@ -241,7 +242,15 @@ function RouteMiniMap({ a }: { a: AssignmentView }) {
   if (!route || route.ext.path.length === 0) return null;
   return (
     <div className="h-44 overflow-hidden rounded-lg border border-border">
-      <OpsMap routes={[route]} shelters={shelter} highlightRouteIds={[route.route_id]} showLegend={false} focus={route.ext.path} className="relative h-full w-full" />
+      <Suspense fallback={<Skeleton className="h-full w-full" />}>
+        <GlobeView
+          variant="embedded"
+          data={{ routes: [route], shelters: shelter }}
+          highlightRouteIds={[route.route_id]}
+          focus={{ kind: "route", id: route.route_id }}
+          className="relative h-full w-full"
+        />
+      </Suspense>
     </div>
   );
 }

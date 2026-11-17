@@ -7,7 +7,7 @@ import { RouteStatusBadge } from "@/components/status/badges";
 import { TransitionMenu } from "@/components/TransitionMenu";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, Input, Select, Table, TBody, TD, TH, THead, TR } from "@/components/ui/primitives";
-import { useAssignments, useCreateRoute, useRoutes, useShelters, useTransitionRoute, useZones } from "@/hooks/queries";
+import { useAssignments, useCreateRoute, useRoutes, useSegments, useShelters, useTransitionRoute, useZones } from "@/hooks/queries";
 import { useSession } from "@/hooks/session";
 import { ROUTE_STATUS } from "@/lib/semantic";
 import { DISRUPTIVE_ROUTE, ROUTE_TRANSITIONS } from "@/lib/stateMachines";
@@ -20,6 +20,7 @@ export function RoutesPage() {
   const { data: assignments } = useAssignments();
   const { data: zones } = useZones();
   const { data: shelters } = useShelters();
+  const { data: segments } = useSegments();
   const { can } = useSession();
   const transition = useTransitionRoute();
   const create = useCreateRoute();
@@ -43,19 +44,34 @@ export function RoutesPage() {
     [data, status, q, onlyUsed, usage],
   );
 
+  const segmentNames = ["", ...(segments ?? []).map((s) => s.name)];
   const fields: FieldSpec[] = [
-    { name: "source", label: "From (zone location)", type: "select", options: (zones ?? []).map((z) => z.location) },
-    { name: "destination", label: "To (shelter location)", type: "select", options: (shelters ?? []).map((s) => s.location) },
-    { name: "distance_km", label: "Distance (km)", type: "number", min: 0.1, step: 0.1, required: true },
-    { name: "travel_time", label: "Travel time (min)", type: "number", min: 0, required: true },
+    { name: "zone", label: "From zone", type: "select", options: (zones ?? []).map((z) => z.name) },
+    { name: "shelter", label: "To shelter", type: "select", options: (shelters ?? []).map((s) => s.name) },
+    { name: "via1", label: "Through road or bridge (optional)", type: "select", options: segmentNames },
+    { name: "via2", label: "Then through (optional)", type: "select", options: segmentNames },
     { name: "risk_level", label: "Risk level", type: "select", options: ROUTE_RISK_LEVELS },
+    { name: "distance_km", label: "Distance (km)", type: "number", min: 0.1, step: 0.1, help: "Leave empty to estimate from the map" },
+    { name: "travel_time", label: "Travel time (min)", type: "number", min: 0, help: "Leave empty to estimate" },
   ];
 
-  const submit = (v: FormValues) =>
+  const submit = (v: FormValues) => {
+    const zone = zones?.find((z) => z.name === v.zone);
+    const shelter = shelters?.find((s) => s.name === v.shelter);
+    if (!zone || !shelter) return;
     create.mutate(
-      { source: v.source!, destination: v.destination!, distance_km: Number(v.distance_km), travel_time: Number(v.travel_time), risk_level: v.risk_level as RouteRiskLevel, status: "Open" },
+      {
+        zone_id: zone.zone_id,
+        shelter_id: shelter.shelter_id,
+        via: [v.via1, v.via2].filter((x): x is string => !!x),
+        risk_level: v.risk_level as RouteRiskLevel,
+        status: "Open",
+        ...(v.distance_km ? { distance_km: Number(v.distance_km) } : {}),
+        ...(v.travel_time ? { travel_time: Number(v.travel_time) } : {}),
+      },
       { onSuccess: () => setAdding(false) },
     );
+  };
 
   return (
     <div>

@@ -3,9 +3,10 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AppShell, RequirePermission } from "@/components/layout/AppShell";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/primitives";
 import { TooltipProvider } from "@/components/ui/overlay";
-import { useLiveSync } from "@/hooks/queries";
+import { useLiveConnection } from "@/hooks/queries";
 import { useSession, useThemeEffect } from "@/hooks/session";
 import { homeFor } from "@/lib/rbac";
 import { useUiStore } from "@/stores/ui";
@@ -23,7 +24,6 @@ const RoutesPage = lazy(() => import("@/features/resources/RoutesPage").then((m)
 const CheckInPage = lazy(() => import("@/features/checkin/CheckInPage").then((m) => ({ default: m.CheckInPage })));
 const FieldPage = lazy(() => import("@/features/field/FieldPage").then((m) => ({ default: m.FieldPage })));
 const AuditPage = lazy(() => import("@/features/audit/AuditPage").then((m) => ({ default: m.AuditPage })));
-const GodsEyePage = lazy(() => import("@/features/godseye/GodsEyePage").then((m) => ({ default: m.GodsEyePage })));
 const ArchitecturePage = lazy(() => import("@/features/architecture/ArchitecturePage").then((m) => ({ default: m.ArchitecturePage })));
 
 const queryClient = new QueryClient({
@@ -53,9 +53,10 @@ function Guard({ p, children }: { p: Parameters<typeof RequirePermission>[0]["pe
 }
 
 function AppRoutes() {
-  useLiveSync();
+  useLiveConnection();
   useThemeEffect();
   return (
+    <ErrorBoundary>
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -64,7 +65,6 @@ function AppRoutes() {
           <Route index element={<Home />} />
           <Route path="plan" element={<Guard p="plan:view"><PlanPage /></Guard>} />
           <Route path="plan/versions" element={<Guard p="plan:view"><VersionsPage /></Guard>} />
-          <Route path="gods-eye" element={<Guard p="dashboard:view"><GodsEyePage /></Guard>} />
           <Route path="drill" element={<Guard p="drill:run"><DrillPage /></Guard>} />
           <Route path="zones" element={<ZonesPage />} />
           <Route path="shelters" element={<SheltersPage />} />
@@ -78,6 +78,7 @@ function AppRoutes() {
         </Route>
       </Routes>
     </Suspense>
+    </ErrorBoundary>
   );
 }
 

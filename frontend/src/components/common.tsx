@@ -1,6 +1,6 @@
 import { AlertTriangle, Inbox, type LucideIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { NotSupportedError } from "@/api/SafeRouteApi";
+import { ApiError } from "@/api/SafeRouteApi";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/overlay";
 import { Label, Skeleton, Textarea } from "@/components/ui/primitives";
@@ -34,12 +34,13 @@ export function EmptyState({ icon: Icon = Inbox, title, children, action, classN
 }
 
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
-  const unsupported = error instanceof NotSupportedError;
+  const offline = error instanceof ApiError && error.status === 0;
+  const forbidden = error instanceof ApiError && error.status === 403;
   return (
     <EmptyState
       icon={AlertTriangle}
-      title={unsupported ? "Not available in live mode yet" : "Something went wrong"}
-      action={onRetry && !unsupported ? <Button variant="secondary" size="sm" onClick={onRetry}>Retry</Button> : undefined}
+      title={offline ? "Cannot reach the server" : forbidden ? "Not available for your role" : "This could not be loaded"}
+      action={onRetry && !forbidden ? <Button variant="secondary" size="sm" onClick={onRetry}>Try again</Button> : undefined}
     >
       {errorMessage(error)}
     </EmptyState>

@@ -1,6 +1,7 @@
-// Copies of the backend's Pydantic response models (app/schemas/*), same field names and the same
-// status values as app/models/*. The TS types are inferred from the zod schemas, so the types and the
-// runtime check in live mode can't get out of sync.
+// Copies of the backend's Pydantic response models (backend/app/schemas/responses.py), same field
+// names and the same status values as backend/app/models/vocab.py. Every response from the API is
+// checked against these at runtime, so a backend change that breaks the contract shows up as a clear
+// error instead of wrong numbers on screen.
 import { z } from "zod";
 
 /* ------------------------------------------------------------------ vocabularies */
@@ -12,6 +13,8 @@ export const USER_ROLES = [
   "Shelter Manager",
   "Transport Coordinator",
   "Response Team",
+  "Relief Staff",
+  "NGO Volunteer",
 ] as const;
 export const UserRoleSchema = z.enum(USER_ROLES);
 export type UserRole = z.infer<typeof UserRoleSchema>;
@@ -23,7 +26,7 @@ export const ZONE_RISK_LEVELS = ["Extreme", "High", "Moderate", "Low"] as const;
 export const ZONE_STATUSES = ["Pending", "In Progress", "Partially Evacuated", "Evacuated"] as const;
 export const SHELTER_STATUSES = ["Active", "Full", "Inactive", "Closed"] as const;
 export const FACILITY_AVAILABILITY = ["Available", "Limited", "Unavailable"] as const;
-/** Backend vocabulary plus `Cleared` (backend accepts any string; its engine only excludes Blocked/Flooded). */
+/** Blocked and Flooded fail the planner's hard constraint; Cleared means reopened after a closure. */
 export const ROUTE_STATUSES = ["Open", "Congested", "Blocked", "Flooded", "Cleared"] as const;
 export const ROUTE_RISK_LEVELS = ["Low", "Moderate", "High", "Severe"] as const;
 export const VEHICLE_TYPES = ["Bus", "Ambulance", "Truck", "Boat", "Van"] as const;
@@ -208,6 +211,7 @@ export const ResourceSchema = z.object({
   quantity: z.number().int().nonnegative(),
   availability: z.enum(RESOURCE_AVAILABILITY),
   location: z.string().nullable(),
+  per_person: z.number().nonnegative(),
 });
 export type Resource = z.infer<typeof ResourceSchema>;
 
@@ -270,8 +274,12 @@ export interface AffectedZoneCreate {
   population: number;
   priority: (typeof ZONE_PRIORITIES)[number];
   risk_level: ZoneRiskLevel;
+  /** Map position of the zone centre (required by the backend to place the zone). */
+  latitude?: number | null;
+  longitude?: number | null;
+  code?: string | null;
 }
-export type AffectedZoneUpdate = Partial<Omit<AffectedZoneCreate, "disaster_id">> & {
+export type AffectedZoneUpdate = Partial<Omit<AffectedZoneCreate, "disaster_id" | "latitude" | "longitude" | "code">> & {
   evacuated_count?: number;
   status?: ZoneStatus;
 };
@@ -288,15 +296,22 @@ export interface ShelterCreate {
 }
 export type ShelterUpdate = Partial<ShelterCreate>;
 
+/** A route links a zone to a shelter through named road segments (e.g. a bridge). */
 export interface RouteCreate {
-  source: string;
-  destination: string;
-  distance_km: number;
-  travel_time: number;
+  zone_id: number;
+  shelter_id: number;
   risk_level: RouteRiskLevel;
   status: RouteStatus;
+  via?: string[];
+  distance_km?: number;
+  travel_time?: number;
 }
-export type RouteUpdate = Partial<RouteCreate>;
+export interface RouteUpdate {
+  distance_km?: number;
+  travel_time?: number;
+  risk_level?: RouteRiskLevel;
+  status?: RouteStatus;
+}
 
 export interface VehicleCreate {
   vehicle_type: Vehicle["vehicle_type"];
@@ -304,6 +319,7 @@ export interface VehicleCreate {
   status: VehicleStatus;
   current_location: string;
   plate_number?: string | null;
+  team_id?: number | null;
 }
 export type VehicleUpdate = Partial<VehicleCreate>;
 
@@ -316,16 +332,4 @@ export interface RescueTeamCreate {
 }
 export type RescueTeamUpdate = Partial<RescueTeamCreate>;
 
-export interface GeneratePlanRequest {
-  disaster_id: number;
-  plan_name: string;
-  consider_traffic?: boolean;
-  max_evacuees_per_batch?: number | null;
-}
 
-export interface DynamicReallocationRequest {
-  plan_id: number;
-  blocked_route_id?: number | null;
-  full_shelter_id?: number | null;
-  reason: string;
-}

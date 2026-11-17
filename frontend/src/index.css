@@ -4,7 +4,6 @@
 @import "@fontsource/ibm-plex-sans/600.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
-@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -35,8 +34,16 @@
   --color-muted: #5d6066;
   --color-accent: #18191b;
   --color-accent-fg: #ffffff;
-  --color-ring: #18191b;
+  --color-ring: #0b7f92;
   --color-brand: #0f8a4c;
+  /* The one accent: selection, focus and "you are here". Never used for status. */
+  --color-signal: #0b7f92;
+  /* Severity 1-5: one hue, stepping in lightness (validated with the dataviz palette checker). */
+  --color-sev-1: #e1a096;
+  --color-sev-2: #d97e73;
+  --color-sev-3: #cf5b4f;
+  --color-sev-4: #bd3931;
+  --color-sev-5: #a01f1b;
 
   --color-ok: #1a7f37;
   --color-ok-fg: #14532d;
@@ -71,8 +78,14 @@
   --color-muted: #979ca4;
   --color-accent: #e9eaec;
   --color-accent-fg: #111214;
-  --color-ring: #e9eaec;
+  --color-ring: #4cc2d4;
   --color-brand: #2fbf71;
+  --color-signal: #4cc2d4;
+  --color-sev-1: #7a493e;
+  --color-sev-2: #9f5646;
+  --color-sev-3: #c4624e;
+  --color-sev-4: #e97158;
+  --color-sev-5: #ff876c;
 
   --color-ok: #3fb950;
   --color-ok-fg: #86efac;
@@ -140,47 +153,17 @@
   }
 }
 
-/* Leaflet theming. Dark tiles are inverted and nearly desaturated so the status colours carry. */
-.leaflet-container {
-  background: var(--color-surface-2);
+/* CesiumJS map: provider credits (required attribution) set small and quiet. */
+.cesium-widget-credits,
+.cesium-credit-lightbox {
   font-family: var(--font-sans);
 }
-.dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.86) saturate(0.18);
-}
-.leaflet-tile-pane {
-  filter: saturate(0.55) contrast(0.96);
-}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--color-surface);
-  color: var(--color-fg);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
-  border-radius: 6px;
-}
-.leaflet-popup-content {
-  margin: 10px 12px;
-  font-size: 13px;
-  line-height: 1.45;
-}
-.leaflet-container a.leaflet-popup-close-button {
-  color: var(--color-muted);
-}
-.leaflet-control-attribution {
-  background: color-mix(in oklab, var(--color-surface) 80%, transparent) !important;
+.cesium-credit-textContainer,
+.cesium-credit-expand-link {
   color: var(--color-muted) !important;
-  font-size: 10px;
 }
-.leaflet-control-attribution a {
-  color: var(--color-accent) !important;
-}
-.leaflet-bar a {
-  background: var(--color-surface) !important;
-  color: var(--color-fg) !important;
-  border-color: var(--color-border) !important;
-}
-.sr-marker {
-  background: transparent;
-  border: none;
+.cesium-viewer,
+.cesium-widget,
+.cesium-widget canvas {
+  outline: none;
 }

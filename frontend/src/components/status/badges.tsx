@@ -24,8 +24,15 @@ function StyleBadge({ s, short, className }: { s: StatusStyle; short?: string; c
   );
 }
 
+/** Severity is a swatch beside plain text (the text keeps text colour; the swatch carries the level). */
 export function SeverityBadge({ severity, compact }: { severity: Severity; compact?: boolean }) {
-  return <StyleBadge s={SEVERITY[severity]} short={compact ? `Sev ${severity}` : undefined} />;
+  const s = SEVERITY[severity];
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums" title={s.label}>
+      <span aria-hidden className="size-2.5 shrink-0 rounded-[2px]" style={{ background: `var(--color-sev-${severity})` }} />
+      {compact ? `Sev ${severity}` : s.label}
+    </span>
+  );
 }
 
 export function ShelterStatusBadge({ status }: { status: ShelterDisplayStatus }) {

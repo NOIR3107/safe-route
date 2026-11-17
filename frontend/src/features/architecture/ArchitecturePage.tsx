@@ -2,7 +2,6 @@ import { ArrowDown, CheckCircle2, Database, Layers, Network, Server, ShieldCheck
 import type { ReactNode } from "react";
 import { PageHeader } from "@/components/common";
 import { Badge, Card, Table, TBody, TD, TH, THead, TR } from "@/components/ui/primitives";
-import { apiMode } from "@/api/client";
 import { cn } from "@/lib/utils";
 
 const LAYERS: { name: string; icon: typeof Layers; tone: string; items: string[]; note?: string }[] = [
@@ -10,34 +9,35 @@ const LAYERS: { name: string; icon: typeof Layers; tone: string; items: string[]
     name: "Presentation – React + TypeScript (this app)",
     icon: Layers,
     tone: "border-info/50 bg-info/10",
-    items: ["Command Dashboard", "Allocation Plan + Why drawer", "Plan Versions", "Drill Mode", "God's Eye View (3D)", "CRUD screens", "Check-in", "Field (PWA, offline)", "Public (EN/HI/TA)"],
-    note: "TanStack Query · Zustand · React-Leaflet · Recharts · Tailwind/shadcn. 3D globe: god's-eye-view (submodule, embedded via postMessage)",
+    items: ["Command Dashboard + map", "Allocation Plan + Why drawer", "Plan Versions", "Drill Mode", "CRUD screens", "Check-in", "Field (PWA, offline)", "Public (EN/HI/TA)"],
+    note: "TanStack Query (one store) fed by REST + WebSocket · Zustand · CesiumJS map (the engine god's-eye-view uses) · Recharts · Tailwind",
   },
   {
-    name: "REST API contract – SafeRouteApi",
+    name: "FastAPI routers – REST + WebSocket",
     icon: Network,
     tone: "border-violet/50 bg-violet/10",
-    items: ["HttpApi → FastAPI /api/v1 (zod-validated)", "MockApi → in-browser service (IndexedDB)", "Switch: VITE_API_MODE=mock|live"],
+    items: ["/api/v1 REST (OpenAPI at /docs)", "/api/v1/ws: change push + heartbeat", "/api/v1/ingest: live feed (validated)", "JWT + RBAC on every route"],
+    note: "backend/app/api/*.py · responses checked in the browser with zod",
   },
   {
     name: "Business services",
     icon: Server,
     tone: "border-accent/50 bg-accent/10",
     items: ["DisasterService", "ShelterService", "RouteService", "ResourceService", "EvacuationService", "AuthService (JWT, RBAC)", "Audit / Notifications"],
-    note: "Backend: app/services/*.py · Mock: src/api/mock/planning.ts",
+    note: "backend/app/services/*.py: plan versions, re-planning, check-in, drills",
   },
   {
     name: "Decision / planning engines",
     icon: ShieldCheck,
     tone: "border-warn/50 bg-warn/10",
     items: ["Priority engine (FR-06)", "Allocation: Greedy | Min-Cost Flow (FR-07/08/09)", "Route feasibility & cost", "Event-driven re-planning (FR-10)", "Explainability & plan diff"],
-    note: "Backend: app/engines/*.py · Frontend: src/engine/*.ts (pure, unit-tested)",
+    note: "backend/app/engine/*.py: pure Python, no database, unit-tested",
   },
   {
     name: "Repository / data access",
     icon: Database,
     tone: "border-ok/50 bg-ok/10",
-    items: ["SQLAlchemy 2.0 models (app/models)", "PostgreSQL / SQLite", "Mock: DbState tables + extension tables"],
+    items: ["Repositories (backend/app/repositories)", "SQLAlchemy 2.0 models + Alembic migrations", "PostgreSQL (live + drill copy)"],
   },
 ];
 
@@ -84,7 +84,6 @@ export function ArchitecturePage() {
                   <div className={cn("rounded-lg border p-3", l.tone)}>
                     <p className="flex items-center gap-2 text-sm font-semibold">
                       <l.icon className="size-4" aria-hidden /> {l.name}
-                      {i === 1 ? <Badge tone={apiMode === "mock" ? "violet" : "ok"} className="ml-auto">active: {apiMode}</Badge> : null}
                     </p>
                     <ul className="mt-2 flex flex-wrap gap-1.5">
                       {l.items.map((it) => (

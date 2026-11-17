@@ -64,26 +64,34 @@ export const TONE_TEXT: Record<Tone, string> = {
 
 /** Raw colours for Leaflet (SVG attributes cannot use CSS variables). */
 export const TONE_HEX: Record<"dark" | "light", Record<Tone, string>> = {
+  // Same values as the --color-* status tokens in index.css.
   dark: {
-    ok: "#22c55e",
-    lime: "#84cc16",
-    warn: "#f59e0b",
-    caution: "#f97316",
-    danger: "#ef4444",
-    info: "#38bdf8",
-    neutral: "#94a3b8",
-    violet: "#a78bfa",
+    ok: "#3fb950",
+    lime: "#8cc43a",
+    warn: "#d6a02a",
+    caution: "#e5793a",
+    danger: "#f0534b",
+    info: "#5b9cf0",
+    neutral: "#8b9098",
+    violet: "#a98bf0",
   },
   light: {
-    ok: "#16a34a",
-    lime: "#65a30d",
-    warn: "#d97706",
-    caution: "#ea580c",
-    danger: "#dc2626",
-    info: "#0284c7",
-    neutral: "#64748b",
-    violet: "#7c3aed",
+    ok: "#1a7f37",
+    lime: "#5a8a0f",
+    warn: "#b7791f",
+    caution: "#d0601c",
+    danger: "#cf222e",
+    info: "#2f6fb3",
+    neutral: "#6b6f76",
+    violet: "#7651c9",
   },
+}
+
+/** Severity 1-5 colours (same values as the --color-sev-N tokens): one hue stepping in lightness, so
+ * neighbouring levels stay distinct for colour-blind readers. Validated with the dataviz checker. */
+export const SEVERITY_HEX: Record<"dark" | "light", Record<Severity, string>> = {
+  dark: { 1: "#7a493e", 2: "#9f5646", 3: "#c4624e", 4: "#e97158", 5: "#ff876c" },
+  light: { 1: "#e1a096", 2: "#d97e73", 3: "#cf5b4f", 4: "#bd3931", 5: "#a01f1b" },
 };
 
 export const SEVERITY: Record<Severity, StatusStyle> = {

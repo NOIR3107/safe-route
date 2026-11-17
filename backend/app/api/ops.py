@@ -14,7 +14,7 @@ from app.schemas.responses import AuditLogOut, Clock, DashboardSummary, DrillSta
 from app.services import drill
 from app.services.clock import now_minute
 from app.services.context import Actor, as_utc, iso, utcnow
-from app.services.views import dashboard_summary
+from app.services.views import dashboard_summary, timeline
 
 from .catalog import run
 from .deps import commit_and_publish, current_actor, current_user, get_repos, require
@@ -66,6 +66,12 @@ def ops_events(_: Actor = Depends(current_actor), repos: Repos = Depends(get_rep
 @router.get("/dashboard/summary", response_model=DashboardSummary)
 def summary(_: Actor = Depends(current_actor), repos: Repos = Depends(get_repos)):
     return dashboard_summary(repos)
+
+
+@router.get("/dashboard/timeline")
+def dashboard_timeline(_: Actor = Depends(current_actor), repos: Repos = Depends(get_repos)) -> dict:
+    """History behind the dashboard sparklines: evacuated over time and every plan version's metrics."""
+    return timeline(repos)
 
 
 @router.get("/notifications", response_model=list[NotificationOut])
