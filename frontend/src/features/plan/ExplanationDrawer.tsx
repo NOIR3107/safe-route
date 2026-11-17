@@ -1,3 +1,4 @@
+import { useIsMutating } from "@tanstack/react-query";
 import { Ban, CheckCircle2, CircleDollarSign, Clock4, ShieldCheck, Undo2 } from "lucide-react";
 import { useState } from "react";
 import type { AssignmentView, CostBreakdown, RejectedAlternative } from "@/api/extensions";
@@ -6,7 +7,7 @@ import { ApprovalBadge, AssignmentStatusBadge, SeverityBadge } from "@/component
 import { Button } from "@/components/ui/button";
 import { Dialog, SheetContent } from "@/components/ui/overlay";
 import { Badge, Label, Select } from "@/components/ui/primitives";
-import { useApprove, useOverride, usePlan, useVehicles } from "@/hooks/queries";
+import { useApprove, useOverride, usePlan, useShelters, useVehicles } from "@/hooks/queries";
 import { useSession } from "@/hooks/session";
 import { FACILITY_ICON } from "@/lib/semantic";
 import { cn, fmtMinutes, fmtNum, fmtSim } from "@/lib/utils";
@@ -24,10 +25,14 @@ function DrawerBody({ a, close }: { a: AssignmentView; close: () => void }) {
   const { can } = useSession();
   const { data: plan } = usePlan();
   const { data: vehicles } = useVehicles();
+  const { data: shelters } = useShelters();
   const approve = useApprove();
+  const busy = useIsMutating() > 0; // e.g. a re-plan is still running: wait for the new version
   const override = useOverride();
   const [overrideOpen, setOverrideOpen] = useState(false);
-  const feasible = a.ext.explanation.alternatives.filter((x) => x.verdict === "higher-cost");
+  // The explanation was computed when the plan was made; offer only shelters that still have room now.
+  const roomNow = (id: number) => (shelters?.find((s) => s.shelter_id === id)?.available ?? 0) >= a.people_count;
+  const feasible = a.ext.explanation.alternatives.filter((x) => x.verdict === "higher-cost" && roomNow(x.shelter_id));
   const [target, setTarget] = useState<number | null>(feasible[0]?.shelter_id ?? null);
   const version = plan?.current_version;
   const movable = a.status === "Scheduled" || a.status === "In Progress";
@@ -101,7 +106,7 @@ function DrawerBody({ a, close }: { a: AssignmentView; close: () => void }) {
 
       <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-border bg-surface px-5 py-3">
         {version && version.status === "Proposed" && can("plan:approve") ? (
-          <Button variant="success" onClick={() => approve.mutate(version.version)} disabled={approve.isPending} data-testid="approve-version">
+          <Button variant="success" onClick={() => approve.mutate(version.version)} disabled={busy} data-testid="approve-version">
             <ShieldCheck /> Approve plan v{version.version}
           </Button>
         ) : version?.status === "Approved" ? (
@@ -110,7 +115,16 @@ function DrawerBody({ a, close }: { a: AssignmentView; close: () => void }) {
           </Badge>
         ) : null}
         {can("plan:override") ? (
-          <Button variant="secondary" onClick={() => setOverrideOpen(true)} disabled={!movable || feasible.length === 0} data-testid="override-open">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setTarget(feasible[0]?.shelter_id ?? null);
+              setOverrideOpen(true);
+            }}
+            disabled={busy || !movable || feasible.length === 0}
+            title={movable && feasible.length === 0 ? "No other suitable shelter has room for this group right now" : undefined}
+            data-testid="override-open"
+          >
             <Undo2 /> Override…
           </Button>
         ) : null}

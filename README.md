@@ -1,7 +1,6 @@
 # SafeRoute – Disaster Evacuation & Shelter Allocation System
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
-<!-- Replace OWNER/REPO with the GitHub path of this repository once it is pushed. -->
+[![CI](https://github.com/Tanishq7690/se-project-/actions/workflows/ci.yml/badge.svg)](https://github.com/Tanishq7690/se-project-/actions/workflows/ci.yml)
 
 Software Engineering Lab project, JSS University Noida, Department of CSE (AI/ML).
 Team: Bhoomika, Akshita Upadhyay, Neel Tripathi, Tanishq Saxena.

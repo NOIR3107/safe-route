@@ -1,3 +1,4 @@
+import { useIsMutating } from "@tanstack/react-query";
 /**
  * Right-hand dock of the Command Dashboard, in order of importance:
  *   1. one number: people still at risk (with its trend)
@@ -39,6 +40,7 @@ export function KpiPanel() {
   const lastMessageAt = useLive((s) => s.lastMessageAt);
   const { can } = useSession();
   const approve = useApprove();
+  const busy = useIsMutating() > 0; // e.g. a re-plan is still running: wait for the new version
   const select = useMapStore((s) => s.select);
   const now = useNow();
 
@@ -155,7 +157,7 @@ export function KpiPanel() {
       </section>
 
       {/* 3 ---------------------------------------------------------------- plan */}
-      <PlanRow version={v} canApprove={can("plan:approve")} onApprove={(n) => approve.mutate(n)} busy={approve.isPending} />
+      <PlanRow version={v} canApprove={can("plan:approve")} onApprove={(n) => approve.mutate(n)} busy={busy} />
 
       {/* 4 ---------------------------------------------------------------- shelters */}
       <section className="px-5 pt-4 pb-3" aria-labelledby="shelters-h">

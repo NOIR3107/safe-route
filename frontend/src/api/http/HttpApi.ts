@@ -77,6 +77,8 @@ export class HttpApi implements SafeRouteApi {
   constructor(
     private readonly baseUrl: string,
     private readonly getToken: () => string | null,
+    /** Called when the server rejects our token (expired, or the account no longer exists). */
+    private readonly onUnauthorized: () => void = () => {},
   ) {}
 
   private async request<S extends z.ZodType>(method: Method, path: string, schema: S, body?: unknown): Promise<z.infer<S>> {
@@ -92,6 +94,7 @@ export class HttpApi implements SafeRouteApi {
       throw new ApiError(0, `Cannot reach the SafeRoute server at ${this.baseUrl}. Check that the backend is running.`);
     }
     const data: unknown = res.status === 204 ? null : await res.json().catch(() => null);
+    if (res.status === 401 && token) this.onUnauthorized();
     if (!res.ok) {
       const detail = typeof data === "object" && data && "detail" in data ? (data as { detail: unknown }).detail : null;
       const message =

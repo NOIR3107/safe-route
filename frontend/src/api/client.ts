@@ -6,4 +6,10 @@ export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "http://localh
 /** ws://host/api/v1/ws, derived from the API address. */
 export const WS_URL = `${API_BASE_URL.replace(/^http/, "ws")}/ws`;
 
-export const api = new HttpApi(API_BASE_URL, () => useAuthStore.getState().token);
+// A rejected token (expired after 8 h, or issued before the database was reseeded) signs the user out,
+// so the app never shows a signed-in screen whose every request fails.
+export const api = new HttpApi(
+  API_BASE_URL,
+  () => useAuthStore.getState().token,
+  () => useAuthStore.getState().expire(),
+);

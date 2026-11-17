@@ -58,13 +58,22 @@ DEMO_PASSWORDS = {email: pw for _, email, _, _, pw in DEMO_USERS}
 
 
 def clear_all(db: Session) -> None:
-    """Empty every table (keeps the schema)."""
-    if db.bind.dialect.name == "postgresql":
-        names = ", ".join(t.name for t in Base.metadata.sorted_tables)
-        db.execute(text(f"TRUNCATE {names} RESTART IDENTITY CASCADE"))
-    else:
-        for t in reversed(Base.metadata.sorted_tables):
-            db.execute(t.delete())
+    """Empty every table (keeps the schema) and restart the ids at 1.
+
+    Row DELETEs, not TRUNCATE: TRUNCATE takes exclusive table locks and deadlocked with screens
+    reading the same tables while a drill scenario was loading. Readers keep seeing the old rows
+    until this transaction commits."""
+    pg = db.bind.dialect.name == "postgresql"
+    if pg:
+        db.execute(text("SET LOCAL session_replication_role = replica"))  # skip FK checks while emptying
+    for t in reversed(Base.metadata.sorted_tables):
+        db.execute(t.delete())
+    if pg:
+        db.execute(text("SET LOCAL session_replication_role = DEFAULT"))
+        for t in Base.metadata.sorted_tables:
+            for col in t.primary_key.columns:
+                if len(t.primary_key.columns) == 1 and str(col.type) == "INTEGER":
+                    db.execute(text(f"SELECT setval(pg_get_serial_sequence('{t.name}', '{col.name}'), 1, false)"))
     db.flush()
 
 

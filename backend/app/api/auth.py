@@ -71,7 +71,8 @@ users_router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @users_router.get("", response_model=list[UserOut])
-def list_users(_=Depends(require("users:manage")), db: Session = Depends(get_live_session)) -> list[dict]:
+def list_users(_=Depends(require("audit:read")), db: Session = Depends(get_live_session)) -> list[dict]:
+    """Names for labelling the audit log, so anyone who may read the audit log may list users."""
     return [
         {
             "user_id": u.user_id,

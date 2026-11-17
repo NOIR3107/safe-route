@@ -123,8 +123,17 @@ function useApiMutation<TVars, TResult>(fn: (v: TVars) => Promise<TResult>, succ
   });
 }
 
-export const useGeneratePlan = () =>
-  useApiMutation((strategy: StrategyId) => api.generatePlan(strategy), (p) => `Plan v${p.current_version?.version ?? 1} proposed`);
+export const useGeneratePlan = () => {
+  const qc = useQueryClient();
+  return useApiMutation(
+    async (strategy: StrategyId) => {
+      const plan = await api.generatePlan(strategy);
+      qc.setQueryData(keys.plan, plan); // Approve must target this version, not a cached older one
+      return plan;
+    },
+    (p) => `Plan v${p.current_version?.version ?? 1} proposed`,
+  );
+};
 export const useApprove = () => useApiMutation((version: number) => api.approveVersion(version), (_r, v) => `Plan v${v} approved`);
 export const useOverride = () =>
   useApiMutation(

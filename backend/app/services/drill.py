@@ -46,10 +46,10 @@ def _restore(engine: Engine, data: dict[str, list[dict]]) -> None:
         pg = conn.dialect.name == "postgresql"
         if pg:
             conn.execute(text("SET session_replication_role = replica"))  # load in any order, keys checked by the source
-            conn.execute(text(f"TRUNCATE {', '.join(t.name for t in Base.metadata.sorted_tables)} RESTART IDENTITY CASCADE"))
-        else:
-            for t in reversed(Base.metadata.sorted_tables):
-                conn.execute(t.delete())
+        # Row DELETEs, not TRUNCATE: TRUNCATE's exclusive table locks deadlocked with screens reading
+        # the drill data during reset/replay. Readers see the old rows until this commits.
+        for t in reversed(Base.metadata.sorted_tables):
+            conn.execute(t.delete())
         for t in Base.metadata.sorted_tables:
             rows = data.get(t.name) or []
             if rows:

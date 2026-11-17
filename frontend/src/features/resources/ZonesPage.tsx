@@ -20,6 +20,8 @@ const FIELDS: FieldSpec[] = [
   { name: "population", label: "Population needing evacuation", type: "number", min: 0, required: true },
   { name: "priority", label: "Priority", type: "select", options: ZONE_PRIORITIES },
   { name: "risk_level", label: "Risk level", type: "select", options: ZONE_RISK_LEVELS, help: "Sets the 1–5 severity used in the cost function." },
+  { name: "latitude", label: "Latitude (centre)", type: "number", step: 0.0001, required: true, help: "Chennai is about 13.0" },
+  { name: "longitude", label: "Longitude (centre)", type: "number", step: 0.0001, required: true, help: "Chennai is about 80.2" },
 ];
 
 export function ZonesPage() {
@@ -51,7 +53,10 @@ export function ZonesPage() {
       risk_level: v.risk_level as ZoneRiskLevel,
     };
     if (editing === "new") {
-      create.mutate({ ...body, disaster_id: disasters?.[0]?.disaster_id ?? 1, state: "Tamil Nadu", district: "Chennai" }, { onSuccess: () => setEditing(null) });
+      create.mutate(
+        { ...body, latitude: Number(v.latitude), longitude: Number(v.longitude), disaster_id: disasters?.[0]?.disaster_id ?? 1, state: "Tamil Nadu", district: "Chennai" },
+        { onSuccess: () => setEditing(null) },
+      );
     } else if (editing) {
       update.mutate({ id: editing.zone_id, body }, { onSuccess: () => setEditing(null) });
     }
@@ -161,11 +166,11 @@ export function ZonesPage() {
         open={editing != null}
         onOpenChange={(o) => !o && setEditing(null)}
         title={editing === "new" ? "Register affected zone" : `Edit ${editing?.name ?? "zone"}`}
-        fields={FIELDS}
+        fields={editing === "new" ? FIELDS : FIELDS.filter((f) => f.name !== "latitude" && f.name !== "longitude")}
         initial={
           editing && editing !== "new"
             ? { name: editing.name, location: editing.location, population: String(editing.population), priority: editing.priority, risk_level: editing.risk_level }
-            : { name: "", location: "", population: "100", priority: "P2", risk_level: "High" }
+            : { name: "", location: "", population: "100", priority: "P2", risk_level: "High", latitude: "13.0400", longitude: "80.2300" }
         }
         submitLabel={editing === "new" ? "Register" : "Save"}
         busy={create.isPending || update.isPending}

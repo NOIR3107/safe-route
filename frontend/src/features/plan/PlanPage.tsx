@@ -1,3 +1,4 @@
+import { useIsMutating } from "@tanstack/react-query";
 import { AlertOctagon, ChevronRight, GitCompare, ListChecks, RefreshCw, ShieldCheck, Play } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -26,6 +27,7 @@ export function PlanPage() {
   const setStrategy = useUiStore((s) => s.setStrategy);
   const generate = useGeneratePlan();
   const approve = useApprove();
+  const busy = useIsMutating() > 0; // e.g. a re-plan is still running: wait for the new version
   const [compare, setCompare] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [zoneFilter, setZoneFilter] = useState("all");
@@ -97,7 +99,7 @@ export function PlanPage() {
               </Button>
             ) : null}
             {version?.status === "Proposed" && can("plan:approve") ? (
-              <Button variant="success" onClick={() => approve.mutate(version.version)} disabled={approve.isPending}>
+              <Button variant="success" onClick={() => approve.mutate(version.version)} disabled={busy}>
                 <ShieldCheck /> Approve v{version.version}
               </Button>
             ) : null}

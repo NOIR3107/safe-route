@@ -10,6 +10,7 @@ import { Badge, Input, Label } from "@/components/ui/primitives";
 import { useLogin, useSession } from "@/hooks/session";
 import { homeFor, ROLE_LABEL } from "@/lib/rbac";
 import { errorMessage } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 
 const ROLE_INFO: Record<UserRole, { icon: LucideIcon; blurb: string }> = {
@@ -43,6 +44,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const expired = useAuthStore((s) => s.expired);
 
   if (user) return <Navigate to={homeFor(user.role)} replace />;
 
@@ -82,6 +84,11 @@ export function LoginPage() {
             A decision-support system: it <span className="text-fg">proposes</span> optimal, explainable evacuation plans and re-plans live as roads close and shelters fill. A human coordinator{" "}
             <span className="text-fg">approves or overrides</span>.
           </p>
+          {expired ? (
+            <p role="status" className="mt-6 rounded-md border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn-fg" data-testid="session-expired">
+              Your session has ended (sign-ins last 8 hours, or the server no longer accepts it). Please sign in again.
+            </p>
+          ) : null}
           <form
             className="mt-8 space-y-4"
             onSubmit={(e: FormEvent) => {
