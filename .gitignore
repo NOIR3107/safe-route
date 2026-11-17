@@ -43,3 +43,6 @@ coverage.xml
 # Backend generated files
 backend/reports/
 backend/var/
+
+# Netlify CLI link state
+.netlify

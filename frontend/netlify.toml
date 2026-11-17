@@ -1,0 +1,15 @@
+# Netlify build for the SafeRoute frontend. The backend runs on Render (see ../DEPLOY.md);
+# VITE_API_BASE_URL (not a secret) is the backend address baked into the build.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  VITE_API_BASE_URL = "https://saferoute-api.onrender.com/api/v1"
+
+# Single-page app: every path (e.g. /app/zones) is served by index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

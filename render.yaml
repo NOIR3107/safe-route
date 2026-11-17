@@ -1,4 +1,4 @@
-# Render Blueprint for the SafeRoute backend (FastAPI). The frontend is deployed on Vercel and the
+# Render Blueprint for the SafeRoute backend (FastAPI). The frontend is deployed on Netlify and the
 # database is Supabase; see DEPLOY.md. Values marked sync: false are entered in the Render dashboard.
 services:
   - type: web
@@ -15,7 +15,7 @@ services:
       - key: DRILL_DATABASE_URL
         sync: false
       - key: CORS_ORIGIN_REGEX
-        value: https://safe-route[a-z0-9-]*\.vercel\.app
+        value: https://([a-z0-9-]+--)?saferoute-jss\.netlify\.app
       - key: SECRET_KEY
         generateValue: true
       - key: INGEST_TOKEN
