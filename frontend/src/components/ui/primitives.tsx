@@ -4,14 +4,14 @@ import { TONE_CLASSES, type Tone } from "@/lib/semantic";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, ...p }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-lg border border-border bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)] dark:shadow-none", className)} {...p} />;
+  return <div className={cn("rounded-lg border border-border bg-surface shadow-panel", className)} {...p} />;
 }
 export function CardHeader({ className, ...p }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-center justify-between gap-3 px-4 pt-3.5 pb-2", className)} {...p} />;
+  return <div className={cn("flex items-center justify-between gap-3 px-4 pt-4 pb-2.5", className)} {...p} />;
 }
 export function CardTitle({ className, ...p }: HTMLAttributes<HTMLHeadingElement>) {
   // Titles are plain text: the per-card icons callers pass in are hidden so headings read as one quiet system.
-  return <h2 className={cn("flex items-center gap-1.5 text-[13px] font-semibold text-fg [&>svg]:hidden", className)} {...p} />;
+  return <h2 className={cn("flex items-center gap-1.5 text-[13.5px] font-semibold tracking-[-0.01em] text-fg [&>svg]:hidden", className)} {...p} />;
 }
 export function CardDescription({ className, ...p }: HTMLAttributes<HTMLParagraphElement>) {
   return <p className={cn("text-xs text-muted", className)} {...p} />;
@@ -34,7 +34,7 @@ export function Badge({ tone = "neutral", className, ...p }: HTMLAttributes<HTML
 }
 
 const field =
-  "flex w-full rounded-md border border-border bg-surface px-3 text-sm text-fg shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-[border-color,box-shadow] duration-150 placeholder:text-muted/70 hover:border-fg/20 focus-visible:border-fg/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-fg/10 disabled:opacity-50";
+  "flex w-full rounded-md border border-border bg-surface px-3 text-sm text-fg shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-[border-color,box-shadow] duration-150 placeholder:text-muted/80 hover:border-border-strong focus-visible:border-brand focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand/20 disabled:opacity-50";
 
 export function Input({ className, ...p }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(field, "h-9 py-1", className)} {...p} />;
@@ -70,16 +70,16 @@ export function Table({ className, ...p }: HTMLAttributes<HTMLTableElement>) {
   );
 }
 export function THead({ className, ...p }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn("bg-surface-2/50 [&_tr]:border-b [&_tr]:border-border", className)} {...p} />;
+  return <thead className={cn("bg-surface-2/60 [&_tr]:border-b [&_tr]:border-border", className)} {...p} />;
 }
 export function TBody({ className, ...p }: HTMLAttributes<HTMLTableSectionElement>) {
   return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...p} />;
 }
 export function TR({ className, ...p }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn("border-b border-border/70 transition-colors duration-100", className)} {...p} />;
+  return <tr className={cn("border-b border-border/70 transition-colors duration-100 hover:bg-surface-2/40", className)} {...p} />;
 }
 export function TH({ className, ...p }: ThHTMLAttributes<HTMLTableCellElement>) {
-  return <th scope="col" className={cn("h-9 px-3 text-left align-middle text-xs font-medium text-muted whitespace-nowrap", className)} {...p} />;
+  return <th scope="col" className={cn("h-9 px-3 text-left align-middle text-[11.5px] font-medium tracking-[0.01em] text-muted whitespace-nowrap", className)} {...p} />;
 }
 export function TD({ className, ...p }: TdHTMLAttributes<HTMLTableCellElement>) {
   return <td className={cn("px-3 py-2.5 align-middle", className)} {...p} />;

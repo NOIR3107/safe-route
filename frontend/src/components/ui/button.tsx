@@ -4,13 +4,14 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 export const buttonVariants = cva(
-  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] font-medium transition-[background-color,border-color,color] duration-150 ease-out active:translate-y-px disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] font-medium tracking-[-0.005em] transition-[background-color,border-color,color,transform,box-shadow] duration-150 ease-out active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-accent text-accent-fg hover:bg-accent/85",
-        secondary: "border border-border bg-surface text-fg shadow-[0_1px_0_rgb(0_0_0/0.04)] hover:border-fg/25 hover:bg-surface-2",
-        outline: "border border-border bg-transparent text-fg hover:border-fg/25 hover:bg-surface-2",
+        default: "bg-brand text-brand-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] hover:bg-brand/90",
+        contrast: "bg-accent text-accent-fg hover:bg-accent/85",
+        secondary: "border border-border bg-surface text-fg shadow-panel hover:border-border-strong hover:bg-surface-2",
+        outline: "border border-border bg-transparent text-fg hover:border-border-strong hover:bg-surface-2",
         ghost: "text-muted hover:bg-surface-2 hover:text-fg",
         danger: "bg-danger text-white hover:bg-danger/90 dark:text-[#1a0605]",
         success: "bg-ok text-white hover:bg-ok/90 dark:text-[#04140a]",

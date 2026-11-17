@@ -62,33 +62,33 @@ const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "Command",
     items: [
-      { to: "/", label: "Command Dashboard", icon: LayoutDashboard, permission: "dashboard:view" },
-      { to: "/plan", label: "Allocation Plan", icon: ListChecks, permission: "plan:view" },
-      { to: "/plan/versions", label: "Plan Versions", icon: History, permission: "plan:view" },
-      { to: "/drill", label: "Simulation / Drill", icon: PlayCircle, permission: "drill:run" },
+      { to: "/app", label: "Command Dashboard", icon: LayoutDashboard, permission: "dashboard:view" },
+      { to: "/app/plan", label: "Allocation Plan", icon: ListChecks, permission: "plan:view" },
+      { to: "/app/plan/versions", label: "Plan Versions", icon: History, permission: "plan:view" },
+      { to: "/app/drill", label: "Simulation / Drill", icon: PlayCircle, permission: "drill:run" },
     ],
   },
   {
     section: "Resources",
     items: [
-      { to: "/zones", label: "Zones", icon: MapIcon, staffOnly: true },
-      { to: "/shelters", label: "Shelters", icon: Building2, staffOnly: true },
-      { to: "/fleet", label: "Vehicles & Teams", icon: Bus, staffOnly: true },
-      { to: "/routes", label: "Routes", icon: RouteIcon, staffOnly: true },
+      { to: "/app/zones", label: "Zones", icon: MapIcon, staffOnly: true },
+      { to: "/app/shelters", label: "Shelters", icon: Building2, staffOnly: true },
+      { to: "/app/fleet", label: "Vehicles & Teams", icon: Bus, staffOnly: true },
+      { to: "/app/routes", label: "Routes", icon: RouteIcon, staffOnly: true },
     ],
   },
   {
     section: "Operations",
     items: [
-      { to: "/checkin", label: "Shelter Check-in", icon: ScanLine, permission: "shelter:checkin" },
-      { to: "/field", label: "Field Team", icon: Smartphone, permission: "field:update" },
-      { to: "/audit", label: "Audit & Notifications", icon: ScrollText, permission: "audit:read" },
+      { to: "/app/checkin", label: "Shelter Check-in", icon: ScanLine, permission: "shelter:checkin" },
+      { to: "/app/field", label: "Field Team", icon: Smartphone, permission: "field:update" },
+      { to: "/app/audit", label: "Audit & Notifications", icon: ScrollText, permission: "audit:read" },
     ],
   },
   {
     section: "About",
     items: [
-      { to: "/architecture", label: "Architecture & FRs", icon: Network, staffOnly: true },
+      { to: "/app/architecture", label: "Architecture & FRs", icon: Network, staffOnly: true },
       { to: "/public", label: "Public Evacuee Page", icon: Globe },
     ],
   },
@@ -116,7 +116,7 @@ export function AppShell() {
               <li key={i.to}>
                 <NavLink
                   to={i.to}
-                  end={i.to === "/" || i.to === "/plan"}
+                  end={i.to === "/app" || i.to === "/app/plan"}
                   onClick={() => setMobileOpen(false)}
                   title={rail ? i.label : undefined}
                   aria-label={rail ? i.label : undefined}

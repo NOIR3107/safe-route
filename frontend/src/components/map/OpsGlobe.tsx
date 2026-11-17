@@ -285,7 +285,7 @@ export function GlobeView({
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer || !ready) return;
-    const bg = theme === "dark" ? "#131417" : "#f5f5f3";
+    const bg = theme === "dark" ? "#0c0d0f" : "#f3f4f6";
     viewer.scene.backgroundColor = col(bg);
     viewer.scene.globe.baseColor = col(theme === "dark" ? "#1b1d21" : "#e9e9e6");
     const urls = layers.imagery ? [IMAGERY, LABELS[theme]] : [BASEMAP[theme], LABELS[theme]];

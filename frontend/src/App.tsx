@@ -13,6 +13,8 @@ import { useUiStore } from "@/stores/ui";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { PublicPage } from "@/features/public/PublicPage";
 
+const LandingPage = lazy(() => import("@/features/landing/LandingPage").then((m) => ({ default: m.LandingPage })));
+
 const DashboardPage = lazy(() => import("@/features/dashboard/DashboardPage").then((m) => ({ default: m.DashboardPage })));
 const PlanPage = lazy(() => import("@/features/plan/PlanPage").then((m) => ({ default: m.PlanPage })));
 const VersionsPage = lazy(() => import("@/features/plan/VersionsPage").then((m) => ({ default: m.VersionsPage })));
@@ -61,7 +63,8 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/public" element={<PublicPage />} />
-        <Route element={<AppShell />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/app" element={<AppShell />}>
           <Route index element={<Home />} />
           <Route path="plan" element={<Guard p="plan:view"><PlanPage /></Guard>} />
           <Route path="plan/versions" element={<Guard p="plan:view"><VersionsPage /></Guard>} />
@@ -74,8 +77,9 @@ function AppRoutes() {
           <Route path="field" element={<Guard p="field:update"><FieldPage /></Guard>} />
           <Route path="audit" element={<Guard p="audit:read"><AuditPage /></Guard>} />
           <Route path="architecture" element={<ArchitecturePage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/app" replace />} />
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
     </ErrorBoundary>

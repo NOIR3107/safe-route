@@ -59,11 +59,11 @@ export function rolesFor(permission: Permission): UserRole[] {
 export function homeFor(role: UserRole): string {
   switch (role) {
     case "Shelter Manager":
-      return "/checkin";
+      return "/app/checkin";
     case "Response Team":
-      return "/field";
+      return "/app/field";
     default:
-      return "/";
+      return "/app";
   }
 }
 

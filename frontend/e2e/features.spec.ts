@@ -41,7 +41,7 @@ test("an expired session signs out and explains why", async ({ page }) => {
   await page.evaluate(() =>
     localStorage.setItem("saferoute-auth", JSON.stringify({ state: { token: "expired.token.value", user: { user_id: 1, name: "System Administrator", email: "admin@saferoute.org", role: "Admin", scope: { user_id: 1, shelter_id: null, team_id: null, zone_ids: null } } }, version: 0 })),
   );
-  await page.goto("/");
+  await page.goto("/app");
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByTestId("session-expired")).toBeVisible();
   await page.getByTestId("demo-login-admin").click();
@@ -56,7 +56,7 @@ test("coordinator: generate, compare, explain, approve, override, versions", asy
   const api = trackApiErrors(page);
   await loginAs(page, "evacuation-coordinator");
 
-  await page.goto("/plan");
+  await page.goto("/app/plan");
   await page.getByRole("radio", { name: "Greedy" }).click();
   await page.getByTestId("generate-plan").click();
   await expect(page.getByText(/Plan v\d+ proposed/).first()).toBeVisible();
@@ -101,13 +101,13 @@ test("coordinator: generate, compare, explain, approve, override, versions", asy
   }
   expect(done, "no assignment could be overridden").toBe(true);
 
-  await page.goto("/plan/versions");
+  await page.goto("/app/plan/versions");
   await expect(page.getByTestId("version-item").first()).toBeVisible();
   await page.getByTestId("version-item").first().click();
   await expect(page.getByTestId("version-detail")).toBeVisible();
 
   // dashboard: approve from the dock if a version is waiting, layers, 2D/3D, map selection
-  await page.goto("/");
+  await page.goto("/app");
   await expect(page.getByTestId("kpi-at-risk")).toBeVisible();
   const dock = page.getByTestId("dock-approve");
   if (await dock.isVisible()) await dock.click();
@@ -126,7 +126,7 @@ test("coordinator: drill start, speed, inject every event, replay, reset, scenar
   const errors = trackConsole(page);
   const api = trackApiErrors(page);
   await loginAs(page, "evacuation-coordinator");
-  await page.goto("/drill");
+  await page.goto("/app/drill");
   await page.getByTestId("drill-play").click();
   await page.getByRole("radio", { name: "16×" }).click();
   await expect(page.getByTestId("sim-clock")).toHaveText(/T\+(2[2-9]|[3-9]\d)/, { timeout: 60_000 });
@@ -167,7 +167,7 @@ test("admin: register and edit zones, shelters, routes, vehicles, teams; status 
   const tag = Date.now().toString().slice(-5);
   await loginAs(page, "admin");
 
-  await page.goto("/zones");
+  await page.goto("/app/zones");
   await page.getByRole("button", { name: /Register zone/ }).click();
   await page.getByLabel("Zone name").fill(`Test Zone ${tag}`);
   await page.getByLabel(/^Location/).fill("Kodambakkam test area");
@@ -178,7 +178,7 @@ test("admin: register and edit zones, shelters, routes, vehicles, teams; status 
   await page.getByLabel(/Population/).fill("150");
   await submitDialog(page, "Save");
 
-  await page.goto("/shelters");
+  await page.goto("/app/shelters");
   await page.getByRole("button", { name: /Register shelter/ }).click();
   await page.getByLabel("Name").fill(`Test Shelter ${tag}`);
   await page.getByLabel(/^Location/).fill("Ashok Nagar test hall");
@@ -192,7 +192,7 @@ test("admin: register and edit zones, shelters, routes, vehicles, teams; status 
   await page.getByRole("button", { name: `Status for Test Shelter ${tag}` }).click();
   await page.getByRole("menuitem").first().click();
 
-  await page.goto("/routes");
+  await page.goto("/app/routes");
   await page.getByRole("button", { name: /Add route/ }).click();
   await page.getByLabel("From zone").selectOption({ index: 0 });
   await page.getByLabel("To shelter").selectOption({ index: 0 });
@@ -201,7 +201,7 @@ test("admin: register and edit zones, shelters, routes, vehicles, teams; status 
   await statusBtn.click();
   await page.getByRole("menuitem").first().click();
 
-  await page.goto("/fleet");
+  await page.goto("/app/fleet");
   await page.getByRole("button", { name: /Add vehicle/ }).click();
   await page.getByLabel("Seats").fill("12");
   await page.getByLabel("Plate / call sign").fill(`TN-TEST-${tag}`);
@@ -222,7 +222,7 @@ test("shelter manager: check-in, walk-in, reunification", async ({ page }) => {
   const errors = trackConsole(page);
   const api = trackApiErrors(page);
   await loginAs(page, "shelter-manager");
-  await page.goto("/checkin");
+  await page.goto("/app/checkin");
   const before = Number((await page.getByTestId("live-occupancy").innerText()).replace(/\D/g, ""));
   await page.locator("button:enabled", { hasText: /^Check in$/ }).first().click();
   await expect(page.getByTestId("live-occupancy")).not.toHaveText(String(before));
@@ -239,7 +239,7 @@ test("response team: pickup and arrival, offline queue", async ({ page }) => {
   const errors = trackConsole(page);
   const api = trackApiErrors(page);
   await loginAs(page, "response-team");
-  await page.goto("/field");
+  await page.goto("/app/field");
   const task = page.getByTestId("field-task").first();
   await expect(task).toBeVisible();
   await task.click();
@@ -255,7 +255,7 @@ test("commander: audit filters and notifications", async ({ page }) => {
   const errors = trackConsole(page);
   const api = trackApiErrors(page);
   await loginAs(page, "emergency-authority");
-  await page.goto("/audit");
+  await page.goto("/app/audit");
   await expect(page.getByTestId("audit-row").first()).toBeVisible();
   await page.getByLabel("Search audit log").fill("PLAN");
   await expect(page.getByTestId("audit-row").first()).toBeVisible();

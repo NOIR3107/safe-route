@@ -294,7 +294,7 @@ function PlanRow({
     return (
       <section className="flex items-center justify-between gap-3 px-5 py-3.5 text-[13px]">
         <span className="text-muted">No evacuation plan yet</span>
-        <Link to="/plan" className="font-medium underline decoration-fg/30 underline-offset-4 hover:decoration-fg">
+        <Link to="/app/plan" className="font-medium underline decoration-fg/30 underline-offset-4 hover:decoration-fg">
           Open plan
         </Link>
       </section>
@@ -317,7 +317,7 @@ function PlanRow({
         ) : null}
       </div>
       <p className="mt-1 line-clamp-2 text-xs text-muted">{String(version.trigger.description ?? "")}</p>
-      <Link to="/plan" className="mt-2 inline-block text-xs font-medium underline decoration-fg/30 underline-offset-4 hover:decoration-fg">
+      <Link to="/app/plan" className="mt-2 inline-block text-xs font-medium underline decoration-fg/30 underline-offset-4 hover:decoration-fg">
         Review assignments
       </Link>
     </section>

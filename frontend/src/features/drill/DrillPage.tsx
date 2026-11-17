@@ -128,7 +128,7 @@ export function DrillPage() {
           <Card>
             <CardHeader>
               <CardTitle>Live status</CardTitle>
-              <Link to="/plan/versions" className="text-xs underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg">
+              <Link to="/app/plan/versions" className="text-xs underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg">
                 Plan diff
               </Link>
             </CardHeader>

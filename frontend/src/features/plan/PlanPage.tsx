@@ -262,7 +262,7 @@ export function PlanPage() {
         {plan && plan.versions.length > 1 ? (
           <p className="text-sm text-muted">
             This plan has {plan.versions.length} versions.{" "}
-            <Link to="/plan/versions" className="underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg">
+            <Link to="/app/plan/versions" className="underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg">
               See what changed and why →
             </Link>
           </p>

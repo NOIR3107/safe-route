@@ -12,8 +12,8 @@ export type Theme = "dark" | "light";
 
 /** Neutral map ink per theme (routes in use, vehicles, labels). */
 export const INK: Record<Theme, { strong: string; soft: string; faint: string; halo: string; select: string }> = {
-  dark: { strong: "#e9eaec", soft: "#9aa0a8", faint: "#5b6068", halo: "#131417", select: "#4cc2d4" },
-  light: { strong: "#18191b", soft: "#5d6066", faint: "#a6a9ad", halo: "#ffffff", select: "#0b7f92" },
+  dark: { strong: "#ecedef", soft: "#9aa0a8", faint: "#5b6068", halo: "#0c0d0f", select: "#4cc2d4" },
+  light: { strong: "#101215", soft: "#5d6066", faint: "#a6a9ad", halo: "#ffffff", select: "#0b7f92" },
 };
 
 export const toneHex = (tone: Tone, theme: Theme) => TONE_HEX[theme][tone];

@@ -28,8 +28,8 @@ for (const role of ROLES) {
       await page.goto(href);
       await expect(page.locator("main")).toBeVisible();
       await expect(page.getByText("Something on this page failed")).toHaveCount(0);
-      await page.waitForTimeout(href === "/" || /zones|shelters|fleet|routes|drill|field/.test(href) ? 4000 : 800);
-      const name = href === "/" ? "dashboard" : href.slice(1).replace(/\//g, "-");
+      await page.waitForTimeout(href === "/app" || /zones|shelters|fleet|routes|drill|field/.test(href) ? 4000 : 800);
+      const name = href === "/app" ? "dashboard" : href.replace(/^\/(app\/)?/, "").replace(/\//g, "-");
       await page.screenshot({ path: `../docs/screenshots/${role}/${name}.png` });
     }
     expect(errors, errors.join("\n")).toEqual([]);

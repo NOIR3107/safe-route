@@ -1,43 +1,45 @@
 @import "tailwindcss";
-@import "@fontsource/ibm-plex-sans/400.css";
-@import "@fontsource/ibm-plex-sans/500.css";
-@import "@fontsource/ibm-plex-sans/600.css";
-@import "@fontsource/ibm-plex-mono/400.css";
-@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
  * Design tokens. Light values here, dark overrides under .dark (dark is the default theme).
  *
- * The chrome is neutral graphite on purpose: in an operations tool colour has to mean something,
- * so it is kept for status (open / near full / full, open / congested / flooded). The primary
- * action is the foreground colour itself; the only brand colour is the exit-sign green of the logo.
+ * Neutral, cool graphite chrome. Colour has to mean something in an operations tool, so it is
+ * kept for status (open / near full / full, open / congested / flooded). There is one accent:
+ * the exit-sign green of the logo, used for the primary action, focus, selection and "you are here".
+ *
+ * Shape: controls (buttons, inputs) radius-md 6px, panels radius-lg 10px, badges radius-sm 4px.
  *
  * Semantic pairs: <name> is the solid colour (borders, icons, map), <name>-fg is text that keeps
  * WCAG AA contrast on a 15% tint of <name> over the surface.
  */
 @theme {
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Noto Sans Tamil", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Noto Sans Tamil", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
 
-  --radius-sm: 3px;
-  --radius-md: 5px;
-  --radius-lg: 7px;
-  --radius-xl: 9px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
 
-  --color-bg: #f5f5f3;
+  --color-bg: #f3f4f6;
   --color-surface: #ffffff;
-  --color-surface-2: #f0f0ed;
-  --color-border: #e0e0db;
-  --color-fg: #18191b;
-  --color-muted: #5d6066;
-  --color-accent: #18191b;
+  --color-surface-2: #eceef1;
+  --color-border: #dcdfe4;
+  --color-border-strong: #c3c8cf;
+  --color-fg: #101215;
+  --color-muted: #5a606a;
+  --color-accent: #101215;
   --color-accent-fg: #ffffff;
-  --color-ring: #0b7f92;
-  --color-brand: #0f8a4c;
-  /* The one accent: selection, focus and "you are here". Never used for status. */
-  --color-signal: #0b7f92;
+  /* The one accent: exit-sign green. Primary action, focus, selection, "you are here". */
+  --color-brand: #0b7d45;
+  --color-brand-fg: #ffffff;
+  --color-brand-text: #075c33;
+  --color-ring: #0b7d45;
+  --color-signal: #0b7d45;
   /* Severity 1-5: one hue, stepping in lightness (validated with the dataviz palette checker). */
   --color-sev-1: #e1a096;
   --color-sev-2: #d97e73;
@@ -66,21 +68,30 @@
   --color-series-1: #2a78d6;
   --color-series-2: #eb6834;
 
+  /* Elevation, tinted to the graphite neutrals rather than pure black. */
+  --shadow-panel: 0 1px 2px rgb(16 18 21 / 0.05), 0 0 0 1px rgb(16 18 21 / 0.02);
+  --shadow-float: 0 12px 32px -12px rgb(16 18 21 / 0.28), 0 2px 6px -2px rgb(16 18 21 / 0.12);
+
+  --ease-out-quart: cubic-bezier(0.16, 1, 0.3, 1);
   --animate-pulse-ring: pulse-ring 1.6s ease-out infinite;
+  --animate-rise: rise 0.7s var(--ease-out-quart) both;
 }
 
 .dark {
-  --color-bg: #131417;
-  --color-surface: #191a1e;
-  --color-surface-2: #212328;
-  --color-border: #2e3137;
-  --color-fg: #e9eaec;
-  --color-muted: #979ca4;
-  --color-accent: #e9eaec;
-  --color-accent-fg: #111214;
-  --color-ring: #4cc2d4;
-  --color-brand: #2fbf71;
-  --color-signal: #4cc2d4;
+  --color-bg: #0c0d0f;
+  --color-surface: #131417;
+  --color-surface-2: #1b1c20;
+  --color-border: #26282d;
+  --color-border-strong: #383b42;
+  --color-fg: #ecedef;
+  --color-muted: #8f949d;
+  --color-accent: #ecedef;
+  --color-accent-fg: #0c0d0f;
+  --color-brand: #3ccf86;
+  --color-brand-fg: #04170c;
+  --color-brand-text: #6ee0a6;
+  --color-ring: #3ccf86;
+  --color-signal: #3ccf86;
   --color-sev-1: #7a493e;
   --color-sev-2: #9f5646;
   --color-sev-3: #c4624e;
@@ -106,6 +117,14 @@
 
   --color-series-1: #3987e5;
   --color-series-2: #d95926;
+
+  --shadow-panel: 0 0 0 1px rgb(255 255 255 / 0.015);
+  --shadow-float: 0 16px 40px -12px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
 
 @keyframes pulse-ring {
@@ -124,7 +143,7 @@
   }
   body {
     @apply bg-bg font-sans text-fg antialiased;
-    font-feature-settings: "tnum" 0;
+    font-feature-settings: "ss01" 1, "cv11" 1;
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3 {
@@ -135,7 +154,7 @@
     outline-offset: 2px;
   }
   ::selection {
-    background: color-mix(in oklab, var(--color-fg) 22%, transparent);
+    background: color-mix(in oklab, var(--color-brand) 30%, transparent);
   }
   * {
     scrollbar-width: thin;
@@ -143,7 +162,7 @@
   }
   input[type="checkbox"],
   input[type="radio"] {
-    accent-color: var(--color-fg);
+    accent-color: var(--color-brand);
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
