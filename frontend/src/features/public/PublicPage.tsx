@@ -1,8 +1,9 @@
-import { Baby, Backpack, Clock, ExternalLink, HeartPulse, Home, Languages, LifeBuoy, LogIn, MapPin, Moon, PawPrint, Phone, Pill, Route as RouteIcon, Search, ShieldAlert, Sun, Users, Accessibility, Glasses } from "lucide-react";
+import { Baby, Backpack, Clock, ExternalLink, HeartPulse, Home, Languages, LifeBuoy, LogIn, MapPin, Moon, PawPrint, Phone, Pill, Route as RouteIcon, Search, Sun, Users, Accessibility, Glasses } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import type { PublicLookupResult } from "@/api/extensions";
 import { ErrorState } from "@/components/common";
+import { LogoMark } from "@/components/Logo";
 import { OpsMap } from "@/components/map/OpsMap";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, Input, Skeleton } from "@/components/ui/primitives";
@@ -32,13 +33,11 @@ export function PublicPage() {
     <div className="min-h-full bg-bg">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-accent text-accent-fg">
-            <ShieldAlert className="size-4" aria-hidden />
-          </div>
-          <p className="font-semibold">SafeRoute</p>
+          <LogoMark />
+          <p className="font-semibold tracking-[-0.01em]">SafeRoute</p>
           <div className="ml-auto flex items-center gap-1">
             <Languages className="size-4 text-muted" aria-hidden />
-            <div role="radiogroup" aria-label={t.language} className="flex rounded-lg border border-border bg-surface-2 p-0.5">
+            <div role="radiogroup" aria-label={t.language} className="flex rounded-md border border-border bg-surface-2 p-0.5">
               {(Object.keys(LANGUAGE_NAMES) as Lang[]).map((l) => (
                 <button
                   key={l}
@@ -46,7 +45,7 @@ export function PublicPage() {
                   aria-checked={lang === l}
                   lang={l}
                   onClick={() => setLang(l)}
-                  className={`cursor-pointer rounded-md px-2.5 py-1 text-sm ${lang === l ? "bg-surface font-medium shadow-sm" : "text-muted hover:text-fg"}`}
+                  className={`cursor-pointer rounded-[4px] px-2.5 py-1 text-sm transition-colors ${lang === l ? "bg-surface font-medium shadow-[0_1px_2px_rgb(0_0_0/0.12)]" : "text-muted hover:text-fg"}`}
                 >
                   {LANGUAGE_NAMES[l]}
                 </button>
@@ -152,7 +151,7 @@ function ResultCard({ r, t, lang }: { r: PublicLookupResult; t: Dict; lang: Lang
   return (
     <Card className="overflow-hidden" data-testid="public-result">
       <div className="p-5">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted">
+        <p className="text-[13px] font-medium text-muted">
           {r.household_id ? t.yourShelter : t.areaShelter} · {r.zone_name} ({r.zone_code})
         </p>
         {r.shelter ? (
@@ -160,7 +159,7 @@ function ResultCard({ r, t, lang }: { r: PublicLookupResult; t: Dict; lang: Lang
             <h2 className="mt-1 text-xl font-semibold">{r.shelter.name}</h2>
             <p className="flex items-center gap-1.5 text-sm text-muted">
               <MapPin className="size-4" aria-hidden /> {t.location}: {r.shelter.location} ·{" "}
-              <a className="inline-flex items-center gap-1 text-accent hover:underline" href={`https://www.openstreetmap.org/?mlat=${r.shelter.latitude}&mlon=${r.shelter.longitude}#map=16/${r.shelter.latitude}/${r.shelter.longitude}`} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-1 underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg" href={`https://www.openstreetmap.org/?mlat=${r.shelter.latitude}&mlon=${r.shelter.longitude}#map=16/${r.shelter.latitude}/${r.shelter.longitude}`} target="_blank" rel="noreferrer">
                 {t.openMap} <ExternalLink className="size-3" aria-hidden />
               </a>
             </p>
@@ -218,7 +217,7 @@ function ResultCard({ r, t, lang }: { r: PublicLookupResult; t: Dict; lang: Lang
         <ul className="mt-2 grid gap-2 sm:grid-cols-2">
           {bring.map((b) => (
             <li key={b.text} className="flex items-start gap-2 text-sm">
-              <b.icon className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
+              <b.icon className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
               {b.text}
             </li>
           ))}

@@ -57,28 +57,63 @@ export function GodsEyePage() {
     [overlay, zones, shelters, routes, routesInUse, roadsInUse],
   );
 
+  // GEV applies views one after another, and each one switches layers, clears and redraws every
+  // mark and flies the camera. Posting faster than that (the drill refreshes data every second)
+  // builds a queue and the globe never settles: it flickers and can stay black. So: one view in
+  // flight at a time, only the newest waiting one is sent after it, and identical views are skipped.
+  const latest = useRef({ layers, annotations, overview });
+  useEffect(() => {
+    latest.current = { layers, annotations, overview };
+  }, [layers, annotations, overview]);
+  const inFlight = useRef<{ id: string; at: number } | null>(null);
+  const waiting = useRef(false);
+  const lastSig = useRef("");
+
+  const post = useCallback((force: boolean) => {
+    const win = frame.current?.contentWindow;
+    if (!win) return;
+    if (inFlight.current && Date.now() - inFlight.current.at < 20_000) {
+      waiting.current = true;
+      return;
+    }
+    const { layers: l, annotations: a, overview: o } = latest.current;
+    const view: GevView = { camera: camera.current ?? o, layers: l, annotations: a };
+    const sig = JSON.stringify(view);
+    if (!force && sig === lastSig.current) return;
+    lastSig.current = sig;
+    seq.current += 1;
+    const id = `saferoute-${seq.current}`;
+    inFlight.current = { id, at: Date.now() };
+    waiting.current = false;
+    win.postMessage({ type: "gev:view", id, view }, GEV_ORIGIN);
+  }, []);
+
   const send = useCallback(
     (cam?: GevCamera) => {
-      const win = frame.current?.contentWindow;
-      if (!win || status !== "ready") return;
+      if (status !== "ready") return;
       if (cam) camera.current = cam;
-      const view: GevView = { camera: camera.current ?? overview, layers, annotations };
-      seq.current += 1;
-      win.postMessage({ type: "gev:view", id: `saferoute-${seq.current}`, view }, GEV_ORIGIN);
+      post(true);
     },
-    [status, layers, annotations, overview],
+    [status, post],
   );
 
   // Listen for GEV's handshake and replies.
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.origin !== GEV_ORIGIN || !isGevMessage(e.data)) return;
-      if (e.data.type === "gev:ready") setStatus("ready");
-      else setLastResult(e.data.ok ? "View applied" : `GEV: ${e.data.error ?? e.data.steps?.filter((s) => !s.ok).map((s) => s.step).join(", ") ?? "some steps failed"}`);
+      if (e.data.type === "gev:ready") {
+        inFlight.current = null;
+        lastSig.current = "";
+        setStatus("ready");
+        return;
+      }
+      if (inFlight.current?.id === e.data.id) inFlight.current = null;
+      setLastResult(e.data.ok ? "View applied" : `GEV: ${e.data.error ?? e.data.steps?.filter((s) => !s.ok).map((s) => s.step).join(", ") ?? "some steps failed"}`);
+      if (waiting.current) post(true);
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [post]);
 
   // If GEV never says hello, it's probably not running (or not allowed to be framed).
   useEffect(() => {
@@ -87,22 +122,20 @@ export function GodsEyePage() {
     return () => clearTimeout(t);
   }, [status, frameKey]);
 
-  // First view once GEV is ready, and again whenever the overlay or layers change.
-  // The drill clock refreshes our data every second, so annotation updates are throttled.
-  const lastSent = useRef(0);
+  // First view once GEV is ready, then again only when what's drawn really changes
+  // (a road closes, a shelter fills up, a layer is ticked). post() drops identical views.
   useEffect(() => {
     if (status !== "ready") return;
-    const wait = Math.max(0, 4_000 - (Date.now() - lastSent.current));
-    const t = setTimeout(() => {
-      lastSent.current = Date.now();
-      send();
-    }, wait);
+    const t = setTimeout(() => post(false), 1_000);
     return () => clearTimeout(t);
-  }, [status, send]);
+  }, [status, layers, annotations, post]);
 
   const reconnect = () => {
     setStatus("connecting");
     setLastResult(null);
+    inFlight.current = null;
+    waiting.current = false;
+    lastSig.current = "";
     setFrameKey((k) => k + 1);
   };
 
@@ -117,6 +150,9 @@ export function GodsEyePage() {
             <Badge tone={status === "ready" ? "ok" : status === "connecting" ? "info" : "danger"}>
               {status === "ready" ? "Connected" : status === "connecting" ? "Connecting…" : "Not reachable"}
             </Badge>
+            <Button variant="secondary" size="sm" onClick={reconnect} title="Restart the globe if it goes black or stops responding">
+              <RefreshCw /> Reload globe
+            </Button>
             <Button variant="secondary" size="sm" asChild>
               <a href={GEV_URL} target="_blank" rel="noreferrer">
                 <ExternalLink /> Open full app
@@ -126,7 +162,7 @@ export function GodsEyePage() {
         }
       />
       <div className="grid min-h-0 flex-1 gap-4 p-4 sm:p-6 xl:grid-cols-[1fr_340px]">
-        <div className="relative min-h-[480px] overflow-hidden rounded-xl border border-border bg-black">
+        <div className="relative min-h-[480px] overflow-hidden rounded-lg border border-border bg-black">
           <iframe
             key={frameKey}
             ref={frame}
@@ -196,7 +232,7 @@ export function GodsEyePage() {
                 <input type="checkbox" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} className="accent-[var(--color-accent)]" />
                 SafeRoute overlay <span className="text-xs text-muted">({annotations.length} marks)</span>
               </label>
-              <p className="pl-6 text-xs text-muted">Shelters as pins, zones as rings, closed roads red, congested roads amber.</p>
+              <p className="pl-6 text-xs text-muted">Shelters as pins with their status, zones as rings (worst ones named), closed roads as red pins, congested roads amber.</p>
               <label className="flex items-center gap-2 pl-6">
                 <input type="checkbox" checked={roadsInUse} disabled={!overlay} onChange={(e) => setRoadsInUse(e.target.checked)} className="accent-[var(--color-accent)]" />
                 Also roads in use (cyan)
@@ -231,7 +267,7 @@ function NotRunning({ onRetry }: { onRetry: () => void }) {
     <div className="absolute inset-0 flex items-center justify-center bg-bg/95 p-6">
       <div className="max-w-md space-y-3 text-sm">
         <p className="flex items-center gap-2 text-base font-semibold">
-          <Terminal className="size-5 text-accent" aria-hidden /> god&apos;s-eye-view isn&apos;t running
+          <Terminal className="size-5 text-muted" aria-hidden /> god&apos;s-eye-view isn&apos;t running
         </p>
         <p className="text-muted">It is a separate app. Start it from the frontend folder (first time: install its packages):</p>
         <pre className="overflow-x-auto rounded-lg border border-border bg-surface-2 p-3 font-mono text-xs">

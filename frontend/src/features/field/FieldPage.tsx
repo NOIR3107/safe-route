@@ -63,11 +63,11 @@ export function FieldPage() {
 
   return (
     <div className="mx-auto max-w-2xl pb-10">
-      <div className="sticky top-0 z-10 border-b border-border bg-surface/95 px-4 py-3 backdrop-blur">
+      <div className="sticky top-0 z-10 border-b border-border bg-surface px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <div>
             <h1 className="flex items-center gap-2 text-base font-semibold">
-              <Smartphone className="size-4 text-accent" aria-hidden /> Field tasks
+              <Smartphone className="size-4 text-muted" aria-hidden /> Field tasks
             </h1>
             <p className="text-xs text-muted">{user?.name}</p>
           </div>

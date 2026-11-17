@@ -155,7 +155,7 @@ frontend/
 |---|---|
 | `npm run typecheck` | TypeScript in strict mode |
 | `npm run lint` | ESLint; `any` is not allowed |
-| `npm test` | 42 Vitest tests (engine, god's-eye-view adapter, whole demo flow on the mock service) |
+| `npm test` | 43 Vitest tests (engine, god's-eye-view adapter, whole demo flow on the mock service) |
 | `npm run e2e` | Playwright in Chromium; fails on any console error. First time: `npx playwright install chromium` |
 | `npm run screenshots` | Regenerates `docs/screenshots` |
 | `npm run build` | Production build + service worker |

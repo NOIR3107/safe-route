@@ -125,7 +125,7 @@ export function DrillPage() {
             <TimelineTrack events={drill?.timeline ?? []} fired={drill?.fired_event_ids ?? []} now={drill?.sim_minute ?? 0} duration={duration} />
           </Card>
 
-          <div className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-border">
+          <div className="relative min-h-[420px] flex-1 overflow-hidden rounded-lg border border-border">
             {zones.data && shelters.data && routes.data ? (
               <OpsMap zones={zones.data} shelters={shelters.data} routes={routes.data} vehicles={vehicles.data} assignments={assignments.data} />
             ) : (
@@ -138,8 +138,8 @@ export function DrillPage() {
           <Card>
             <CardHeader>
               <CardTitle>Live status</CardTitle>
-              <Link to="/plan/versions" className="text-xs text-accent hover:underline">
-                Plan diff →
+              <Link to="/plan/versions" className="text-xs underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg">
+                Plan diff
               </Link>
             </CardHeader>
             <CardContent className="space-y-3">

@@ -52,7 +52,7 @@ export function CheckInPage() {
               </p>
             </div>
             <Progress className="mt-3 h-2.5" value={shelter.current_occupancy / shelter.capacity} tone={occupancyTone(shelter.current_occupancy / shelter.capacity)} label="Occupancy" />
-            <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+            <dl className="mt-4 grid grid-cols-2 text-sm sm:grid-cols-4 overflow-hidden rounded-md border border-border [&>*]:border-border max-sm:[&>*:nth-child(odd)]:border-r max-sm:[&>*:nth-child(-n+2)]:border-b sm:[&>*:not(:last-child)]:border-r">
               <Fact label="Present" value={fmtNum(shelter.current_occupancy)} />
               <Fact label="Inbound (planned)" value={fmtNum(shelter.inbound)} />
               <Fact label="Walk-in reserve (10%)" value={`${fmtNum(shelter.reserved)} · ${fmtNum(shelter.ext.walk_ins)} used`} />
@@ -73,9 +73,9 @@ export function CheckInPage() {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-surface-2/50 p-2.5">
+    <div className="px-3 py-2.5">
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-0.5 font-semibold tabular-nums">{value}</dd>
+      <dd className="mt-1 font-semibold tabular-nums">{value}</dd>
     </div>
   );
 }

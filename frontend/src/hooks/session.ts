@@ -67,7 +67,7 @@ export function useThemeEffect(): void {
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
     root.style.colorScheme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0a101c" : "#f4f6f9");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#131417" : "#f5f5f3");
   }, [theme]);
 }
 

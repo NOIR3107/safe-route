@@ -4,22 +4,22 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
+  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] font-medium transition-[background-color,border-color,color] duration-150 ease-out active:translate-y-px disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-accent text-accent-fg hover:bg-accent/90 shadow-sm",
-        secondary: "bg-surface-2 text-fg border border-border hover:bg-border/60",
-        outline: "border border-border bg-transparent text-fg hover:bg-surface-2",
-        ghost: "text-fg hover:bg-surface-2",
-        danger: "bg-danger text-white hover:bg-danger/90 shadow-sm",
-        success: "bg-ok text-white hover:bg-ok/90 shadow-sm dark:text-[#04140a]",
-        link: "text-accent underline-offset-4 hover:underline px-0",
+        default: "bg-accent text-accent-fg hover:bg-accent/85",
+        secondary: "border border-border bg-surface text-fg shadow-[0_1px_0_rgb(0_0_0/0.04)] hover:border-fg/25 hover:bg-surface-2",
+        outline: "border border-border bg-transparent text-fg hover:border-fg/25 hover:bg-surface-2",
+        ghost: "text-muted hover:bg-surface-2 hover:text-fg",
+        danger: "bg-danger text-white hover:bg-danger/90 dark:text-[#1a0605]",
+        success: "bg-ok text-white hover:bg-ok/90 dark:text-[#04140a]",
+        link: "h-auto px-0 text-fg underline decoration-fg/30 underline-offset-4 hover:decoration-fg",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 px-3 text-xs",
-        lg: "h-11 px-6 text-base",
+        default: "h-9 px-3.5",
+        sm: "h-8 px-2.5 text-xs",
+        lg: "h-10 px-5 text-sm",
         icon: "size-9",
         "icon-sm": "size-8",
       },

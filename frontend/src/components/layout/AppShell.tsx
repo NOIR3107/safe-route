@@ -17,7 +17,6 @@ import {
   ScanLine,
   ScrollText,
   ShieldAlert,
-  Siren,
   Smartphone,
   Sun,
   UserCog,
@@ -37,6 +36,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/overlay";
+import type { DisasterSeverity } from "@/api/schemas";
+import { Wordmark } from "@/components/Logo";
+import type { Tone } from "@/lib/semantic";
 import { Badge } from "@/components/ui/primitives";
 import { useDisasters, useDrill, useMarkRead, useNotifications } from "@/hooks/queries";
 import { useDrillTicker, useLogin, useSession } from "@/hooks/session";
@@ -103,10 +105,10 @@ export function AppShell() {
   })).filter((s) => s.items.length > 0);
 
   const sidebar = (
-    <nav aria-label="Main" className="flex h-full flex-col gap-4 overflow-y-auto px-3 py-4">
+    <nav aria-label="Main" className="flex h-full flex-col gap-5 overflow-y-auto px-3 pt-5 pb-3">
       {visible.map((s) => (
         <div key={s.section}>
-          <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted/80">{s.section}</p>
+          <p className="px-2 pb-1 text-xs font-medium text-muted/80">{s.section}</p>
           <ul className="space-y-0.5">
             {s.items.map((i) => (
               <li key={i.to}>
@@ -116,12 +118,14 @@ export function AppShell() {
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",
-                      isActive ? "bg-accent/15 font-medium text-fg ring-1 ring-accent/30" : "text-muted hover:bg-surface-2 hover:text-fg",
+                      "relative flex items-center gap-2.5 rounded-md px-2 py-[7px] text-[13.5px] transition-colors duration-100",
+                      isActive
+                        ? "bg-surface-2 font-medium text-fg before:absolute before:inset-y-1.5 before:-left-3 before:w-[3px] before:rounded-r-sm before:bg-brand"
+                        : "text-muted hover:bg-surface-2/70 hover:text-fg",
                     )
                   }
                 >
-                  <i.icon className="size-4 shrink-0" aria-hidden />
+                  <i.icon className="size-4 shrink-0 opacity-80" strokeWidth={1.75} aria-hidden />
                   {i.label}
                 </NavLink>
               </li>
@@ -129,11 +133,18 @@ export function AppShell() {
           </ul>
         </div>
       ))}
-      <div className="mt-auto rounded-lg border border-border bg-surface-2 p-3 text-xs text-muted">
-        <p className="font-medium text-fg">{user.name}</p>
-        <p>{ROLE_LABEL[user.role]}</p>
-        {user.scope.shelter_id ? <p className="mt-1">Scope: shelter #{user.scope.shelter_id}</p> : null}
-        {user.scope.team_id ? <p className="mt-1">Scope: team #{user.scope.team_id}</p> : null}
+      <div className="-mx-3 mt-auto flex items-center gap-2.5 border-t border-border px-5 pt-3 text-xs text-muted">
+        <span aria-hidden className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-fg ring-1 ring-border">
+          {initials(user.name)}
+        </span>
+        <div className="min-w-0 leading-snug">
+          <p className="truncate font-medium text-fg">{user.name}</p>
+          <p className="truncate">
+            {ROLE_LABEL[user.role]}
+            {user.scope.shelter_id ? ` · shelter #${user.scope.shelter_id}` : ""}
+            {user.scope.team_id ? ` · team #${user.scope.team_id}` : ""}
+          </p>
+        </div>
       </div>
     </nav>
   );
@@ -148,8 +159,8 @@ export function AppShell() {
         <aside className="hidden w-60 shrink-0 border-r border-border bg-surface lg:block">{sidebar}</aside>
         {mobileOpen ? (
           <div className="fixed inset-0 top-14 z-[900] flex lg:hidden">
-            <aside className="w-64 border-r border-border bg-surface shadow-2xl">{sidebar}</aside>
-            <button className="flex-1 bg-black/40" aria-label="Close menu" onClick={() => setMobileOpen(false)} />
+            <aside className="w-64 border-r border-border bg-surface shadow-[16px_0_40px_-16px_rgb(0_0_0/0.4)]">{sidebar}</aside>
+            <button className="flex-1 bg-black/45" aria-label="Close menu" onClick={() => setMobileOpen(false)} />
           </div>
         ) : null}
         <main id="main" className="min-w-0 flex-1 overflow-y-auto" tabIndex={-1}>
@@ -168,24 +179,17 @@ function TopBar({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean })
   const disaster = disasters?.[0];
   const running = drill?.phase === "running";
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-3 sm:px-4">
+    <header className="relative flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-3 sm:px-4">
+      {/* The one bold line in the UI: the top edge of every screen carries the incident's severity. */}
+      {disaster ? <span aria-hidden className={cn("absolute inset-x-0 -bottom-px h-[2px]", SEVERITY_RULE[disaster.severity])} /> : null}
       <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={onMenu} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen}>
         {menuOpen ? <X /> : <Menu />}
       </Button>
-      <div className="flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-accent text-accent-fg">
-          <ShieldAlert className="size-4.5" aria-hidden />
-        </div>
-        <div className="leading-tight">
-          <p className="text-sm font-semibold tracking-tight">SafeRoute</p>
-          <p className="hidden text-[11px] text-muted sm:block">Evacuation Command</p>
-        </div>
-      </div>
+      <Wordmark sub="Evacuation Command" className="lg:w-[13.5rem]" />
       {disaster ? (
-        <div className="ml-3 hidden min-w-0 items-center gap-2 border-l border-border pl-3 md:flex">
-          <Siren className="size-4 shrink-0 text-danger" aria-hidden />
-          <p className="truncate text-sm">{disaster.title}</p>
-          <Badge tone="danger">{disaster.severity}</Badge>
+        <div className="ml-1 hidden min-w-0 items-center gap-2.5 border-l border-border pl-4 md:flex">
+          <p className="truncate text-[13.5px] font-medium">{disaster.title}</p>
+          <Badge tone={SEVERITY_TONE[disaster.severity]}>{disaster.severity}</Badge>
         </div>
       ) : null}
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -222,7 +226,7 @@ function NotificationsMenu() {
         <Button variant="ghost" size="icon-sm" className="relative" aria-label={`Notifications, ${unread} unread`}>
           <Bell />
           {unread > 0 ? (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white">
+            <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 font-mono text-[9.5px] font-medium text-white ring-2 ring-surface dark:text-[#1a0605]">
               {unread > 9 ? "9+" : unread}
             </span>
           ) : null}
@@ -245,6 +249,18 @@ function NotificationsMenu() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+const SEVERITY_TONE: Record<DisasterSeverity, Tone> = { Low: "ok", Medium: "warn", High: "caution", Critical: "danger" };
+const SEVERITY_RULE: Record<DisasterSeverity, string> = { Low: "bg-ok", Medium: "bg-warn", High: "bg-caution", Critical: "bg-danger" };
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
 }
 
 /** Demo-mode role switcher: instantly re-login as any seeded account to show RBAC. */
@@ -296,8 +312,8 @@ export function RequirePermission({ permission, children }: { permission: Permis
   if (can(permission)) return <>{children}</>;
   return (
     <div className="flex h-full items-center justify-center p-6">
-      <div className="max-w-md rounded-xl border border-border bg-surface p-6 text-center">
-        <ShieldAlert className="mx-auto size-10 text-danger" aria-hidden />
+      <div className="max-w-md rounded-lg border border-border bg-surface p-7 text-center">
+        <ShieldAlert className="mx-auto size-8 text-muted" strokeWidth={1.5} aria-hidden />
         <h1 className="mt-3 text-lg font-semibold">Access restricted</h1>
         <p className="mt-1 text-sm text-muted">
           {user ? ROLE_LABEL[user.role] : "Your role"} cannot open this screen. Allowed roles:

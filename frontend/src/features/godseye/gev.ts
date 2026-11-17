@@ -79,12 +79,27 @@ function shelterColor(s: ShelterView): GevColor {
   return "green";
 }
 
+/** "Govt Girls HSS, T. Nagar" -> "Govt Girls HSS". Long names were stacking on top of each other. */
+function shortName(name: string): string {
+  return name.split(",")[0]!.trim();
+}
+
+function midpoint(path: LatLng[]): LatLng {
+  return path[Math.floor((path.length - 1) / 2)]!;
+}
+
 /**
  * SafeRoute's picture as GEV annotations, most important first, cut at 24:
  * shelters, zones, then closed roads, congested roads and (if asked) roads in use by the plan.
  *
- * Roads are sent as arrows from zone to shelter. GEV re-routes "route" annotations along real
- * streets in walking mode and adds "N min walk" to the label, which would mislead here.
+ * Labels are kept short and only on things worth reading, otherwise they pile up at city zoom:
+ * shelters get name + status, zones only when severity is 4 or 5, closed roads "R29 flooded".
+ * No live percentages either: they change every drill tick, and every new view makes GEV clear
+ * and redraw all marks and fly the camera again.
+ *
+ * Closed and congested roads are pins at the middle of the road. GEV adds the length to every
+ * arrow label ("R29 flooded — 4.8 km"), and "route" annotations get re-routed as walks, so
+ * arrows are only used for the optional roads-in-use layer.
  */
 export function buildAnnotations(
   zones: ZoneView[],
@@ -97,28 +112,40 @@ export function buildAnnotations(
 
   for (const s of shelters) {
     if (s.latitude == null || s.longitude == null) continue;
-    const load = Math.round(((s.current_occupancy + s.inbound) / s.capacity) * 100);
-    out.push({ type: "pin", latitude: s.latitude, longitude: s.longitude, label: `${s.name} (${load}%)`, color: shelterColor(s) });
+    out.push({ type: "pin", latitude: s.latitude, longitude: s.longitude, label: `${shortName(s.name)} · ${s.display_status}`, color: shelterColor(s) });
   }
 
   for (const z of zones) {
     if (z.ext.polygon.length === 0) continue;
     const color: GevColor = z.ext.severity >= 4 ? "red" : z.ext.severity === 3 ? "amber" : "green";
-    out.push({ type: "highlight", latitude: z.ext.centroid[0], longitude: z.ext.centroid[1], label: `${z.name} (sev ${z.ext.severity})`, color });
+    out.push({
+      type: "highlight",
+      latitude: z.ext.centroid[0],
+      longitude: z.ext.centroid[1],
+      ...(z.ext.severity >= 4 ? { label: z.name } : {}),
+      color,
+    });
   }
 
-  const routeAnnotation = (r: RouteView, color: GevColor, what: string): GevAnnotation => {
-    const from = r.ext.path[0]!;
-    const to = r.ext.path[r.ext.path.length - 1]!;
-    return { type: "arrow", latitude: from[0], longitude: from[1], toLatitude: to[0], toLongitude: to[1], label: `R${r.route_id} ${what}`, color };
-  };
   const usable = routes.filter((r) => r.ext.path.length >= 2);
   const closed = usable.filter((r) => r.status === "Blocked" || r.status === "Flooded");
   const congested = usable.filter((r) => r.status === "Congested" && routesInUse.has(r.route_id));
   const inUse = usable.filter((r) => routesInUse.has(r.route_id) && r.status !== "Congested" && !closed.includes(r));
-  for (const r of closed) out.push(routeAnnotation(r, "red", r.status.toLowerCase()));
-  for (const r of congested) out.push(routeAnnotation(r, "amber", "congested"));
-  if (opts.roadsInUse) for (const r of inUse) out.push(routeAnnotation(r, "cyan", "in use"));
+  for (const r of closed) {
+    const [lat, lon] = midpoint(r.ext.path);
+    out.push({ type: "pin", latitude: lat, longitude: lon, label: `R${r.route_id} ${r.status.toLowerCase()}`, color: "red" });
+  }
+  for (const r of congested) {
+    const [lat, lon] = midpoint(r.ext.path);
+    out.push({ type: "pin", latitude: lat, longitude: lon, color: "amber" });
+  }
+  if (opts.roadsInUse) {
+    for (const r of inUse) {
+      const from = r.ext.path[0]!;
+      const to = r.ext.path[r.ext.path.length - 1]!;
+      out.push({ type: "arrow", latitude: from[0], longitude: from[1], toLatitude: to[0], toLongitude: to[1], color: "cyan" });
+    }
+  }
 
   return out.slice(0, MAX_ANNOTATIONS);
 }

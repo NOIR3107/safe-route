@@ -41,14 +41,14 @@ export interface StatusStyle {
 
 /** Tailwind classes per tone (tinted background, accessible text, matching border). */
 export const TONE_CLASSES: Record<Tone, string> = {
-  ok: "bg-ok/15 text-ok-fg border-ok/40",
-  lime: "bg-lime/15 text-lime-fg border-lime/40",
-  warn: "bg-warn/15 text-warn-fg border-warn/40",
-  caution: "bg-caution/15 text-caution-fg border-caution/40",
-  danger: "bg-danger/15 text-danger-fg border-danger/40",
-  info: "bg-info/15 text-info-fg border-info/40",
-  neutral: "bg-neutral/15 text-neutral-fg border-neutral/40",
-  violet: "bg-violet/15 text-violet-fg border-violet/40",
+  ok: "bg-ok/12 text-ok-fg border-ok/30",
+  lime: "bg-lime/12 text-lime-fg border-lime/30",
+  warn: "bg-warn/12 text-warn-fg border-warn/30",
+  caution: "bg-caution/12 text-caution-fg border-caution/30",
+  danger: "bg-danger/12 text-danger-fg border-danger/30",
+  info: "bg-info/12 text-info-fg border-info/30",
+  neutral: "bg-neutral/12 text-neutral-fg border-neutral/30",
+  violet: "bg-violet/12 text-violet-fg border-violet/30",
 };
 
 export const TONE_TEXT: Record<Tone, string> = {

@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Building2, Globe, LayoutDashboard, LogIn, Moon, ShieldAlert, ShieldCheck, Smartphone, Sun, Truck, UserCog, type LucideIcon } from "lucide-react";
+import { Building2, Globe, LayoutDashboard, LogIn, Moon, ShieldCheck, Smartphone, Sun, Truck, UserCog, type LucideIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { api, apiMode } from "@/api/client";
 import type { UserRole } from "@/api/schemas";
 import { Button } from "@/components/ui/button";
-import { Badge, Card, Input, Label } from "@/components/ui/primitives";
+import { LogoMark } from "@/components/Logo";
+import { Badge, Input, Label } from "@/components/ui/primitives";
 import { useLogin, useSession } from "@/hooks/session";
 import { homeFor, ROLE_LABEL } from "@/lib/rbac";
 import { errorMessage } from "@/lib/utils";
@@ -49,65 +50,67 @@ export function LoginPage() {
   const sorted = [...(accounts ?? [])].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-bg p-4">
-      <div className="absolute right-4 top-4">
+    <div className="grid min-h-full bg-bg lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="absolute right-4 top-4 z-10">
         <Button variant="ghost" size="icon-sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme">
           {theme === "dark" ? <Sun /> : <Moon />}
         </Button>
       </div>
-      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <div className="flex flex-col justify-center">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-accent text-accent-fg">
-              <ShieldAlert className="size-6" aria-hidden />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">SafeRoute</h1>
-              <p className="text-sm text-muted">Disaster Evacuation & Shelter Allocation</p>
-            </div>
+
+      <div className="flex flex-col px-6 py-10 sm:px-12 lg:px-16">
+        <div className="flex items-center gap-3">
+          <LogoMark className="size-9" />
+          <div className="leading-tight">
+            <h1 className="text-lg font-semibold tracking-[-0.01em]">SafeRoute</h1>
+            <p className="text-[13px] text-muted">Disaster Evacuation &amp; Shelter Allocation</p>
           </div>
-          <p className="mt-6 text-muted">
+        </div>
+
+        <div className="my-auto w-full max-w-sm py-12">
+          <p className="text-[15px] leading-relaxed text-muted">
             A decision-support system: it <span className="text-fg">proposes</span> optimal, explainable evacuation plans and re-plans live as roads close and shelters fill. A human coordinator{" "}
             <span className="text-fg">approves or overrides</span>.
           </p>
-          <Card className="mt-6 p-5">
-            <form
-              className="space-y-3"
-              onSubmit={(e: FormEvent) => {
-                e.preventDefault();
-                void doLogin(email, password);
-              }}
-            >
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              {error ? (
-                <p role="alert" className="text-sm text-danger-fg">
-                  {error}
-                </p>
-              ) : null}
-              <Button type="submit" className="w-full" disabled={busy}>
-                <LogIn /> Sign in
-              </Button>
-            </form>
-          </Card>
-          <Link to="/public" className="mt-4 inline-flex items-center gap-1.5 text-sm text-accent hover:underline">
-            <Globe className="size-4" aria-hidden /> Evacuee? Find your shelter (English · हिन्दी · தமிழ்)
-          </Link>
+          <form
+            className="mt-8 space-y-4"
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault();
+              void doLogin(email, password);
+            }}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className="h-10" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-10" />
+            </div>
+            {error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger-fg">
+                {error}
+              </p>
+            ) : null}
+            <Button type="submit" size="lg" className="w-full" disabled={busy}>
+              <LogIn /> Sign in
+            </Button>
+          </form>
         </div>
 
-        <Card className="p-5">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="font-semibold">Demo mode: sign in as a role</h2>
+        <Link to="/public" className="group inline-flex items-center gap-2 text-[13px] text-muted transition-colors hover:text-fg">
+          <Globe className="size-4" aria-hidden />
+          <span className="underline decoration-border underline-offset-4 group-hover:decoration-fg">Evacuee? Find your shelter (English · हिन्दी · தமிழ்)</span>
+        </Link>
+      </div>
+
+      <div className="flex flex-col justify-center border-t border-border bg-surface px-6 py-10 sm:px-12 lg:border-t-0 lg:border-l lg:px-16">
+        <div className="mx-auto w-full max-w-xl">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-[15px] font-semibold">Demo mode: sign in as a role</h2>
             <Badge tone={apiMode === "mock" ? "violet" : "ok"}>{apiMode === "mock" ? "Mock API · seeded Chennai flood" : "Live API"}</Badge>
           </div>
-          <p className="mt-1 text-sm text-muted">One click per role to see role-based access in action. Switch any time from the top bar.</p>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          <p className="mt-1.5 text-[13px] text-muted">One click per role to see role-based access in action. Switch any time from the top bar.</p>
+          <ul className="mt-6 divide-y divide-border overflow-hidden rounded-lg border border-border">
             {sorted.map((a) => {
               const info = ROLE_INFO[a.role];
               return (
@@ -115,24 +118,22 @@ export function LoginPage() {
                   <button
                     onClick={() => void doLogin(a.email, a.password)}
                     disabled={busy}
-                    className="group flex h-full w-full cursor-pointer items-start gap-3 rounded-lg border border-border bg-surface-2/40 p-3 text-left transition-colors hover:border-accent/60 hover:bg-accent/10 disabled:opacity-60"
+                    className="group flex w-full cursor-pointer items-center gap-3.5 bg-surface px-4 py-3.5 text-left transition-colors hover:bg-surface-2 focus-visible:relative focus-visible:z-10 disabled:opacity-60"
                     data-testid={`demo-login-${a.role.replace(/\s+/g, "-").toLowerCase()}`}
                   >
-                    <info.icon className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden />
+                    <info.icon className="size-[18px] shrink-0 text-muted transition-colors group-hover:text-fg" strokeWidth={1.75} aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-center justify-between gap-1 font-medium">
-                        {ROLE_LABEL[a.role]}
-                        <ArrowRight className="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-                      </span>
-                      <span className="block text-xs text-muted">{info.blurb}</span>
-                      <span className="mt-1 block truncate font-mono text-[11px] text-muted">{a.email}</span>
+                      <span className="block text-[14px] font-medium">{ROLE_LABEL[a.role]}</span>
+                      <span className="mt-0.5 block text-xs text-muted">{info.blurb}</span>
                     </span>
+                    <span className="hidden truncate text-xs text-muted sm:block">{a.email}</span>
+                    <LogIn className="size-4 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden />
                   </button>
                 </li>
               );
             })}
           </ul>
-        </Card>
+        </div>
       </div>
     </div>
   );

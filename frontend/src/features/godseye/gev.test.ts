@@ -15,12 +15,20 @@ describe("god's-eye-view adapter", () => {
     expect(all.slice(0, shelters.length).every((a) => a.type === "pin")).toBe(true);
   });
 
-  it("draws flooded roads as red arrows from zone to shelter", () => {
+  it("marks a flooded road with one short red pin on the road", () => {
     const flooded = routes.map((r, i) => (i === 0 ? { ...r, status: "Flooded" as const } : r));
     const ann = buildAnnotations(zones, shelters, flooded, new Set());
-    const arrow = ann.find((a) => a.type === "arrow");
-    expect(arrow).toMatchObject({ type: "arrow", color: "red", label: "R1 flooded" });
-    if (arrow?.type === "arrow") expect([arrow.latitude, arrow.longitude]).toEqual(routes[0]!.ext.path[0]);
+    const pin = ann.find((a) => a.label === "R1 flooded");
+    expect(pin).toMatchObject({ type: "pin", color: "red" });
+    expect(routes[0]!.ext.path).toContainEqual([pin!.latitude, pin!.longitude]);
+  });
+
+  it("keeps labels short and stable so the globe isn't redrawn every drill tick", () => {
+    const ann = buildAnnotations(zones, shelters, routes, new Set());
+    const labels = ann.map((a) => a.label).filter((l): l is string => !!l);
+    expect(labels.every((l) => l.length <= 48 && !/%|km/.test(l))).toBe(true);
+    // Only the worst zones get a name; the rest are coloured rings.
+    expect(ann.filter((a) => a.type === "highlight" && a.label).length).toBe(zones.filter((z) => z.ext.severity >= 4).length);
   });
 
   it("leaves roads in use out unless asked", () => {

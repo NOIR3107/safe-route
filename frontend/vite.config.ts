@@ -16,8 +16,8 @@ export default defineConfig({
         name: "SafeRoute – Evacuation Command",
         short_name: "SafeRoute",
         description: "Disaster evacuation & shelter allocation decision support",
-        theme_color: "#0b1220",
-        background_color: "#0b1220",
+        theme_color: "#131417",
+        background_color: "#131417",
         display: "standalone",
         start_url: "/",
         icons: [

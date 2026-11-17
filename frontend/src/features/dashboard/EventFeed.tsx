@@ -17,8 +17,8 @@ export function EventFeed({ className, limit = 40 }: { className?: string; limit
   const { data, isLoading } = useOpsEvents();
   return (
     <section className={cn("flex min-h-0 flex-col", className)} aria-labelledby="feed-title">
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <h2 id="feed-title" className="text-xs font-semibold uppercase tracking-wider text-muted">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <h2 id="feed-title" className="text-[13px] font-semibold">
           Live event feed
         </h2>
         <span className="flex items-center gap-1.5 text-xs text-muted">
@@ -39,12 +39,12 @@ export function EventFeed({ className, limit = 40 }: { className?: string; limit
           : (data ?? []).slice(0, limit).map((e) => {
               const l = LEVEL[e.level];
               return (
-                <li key={e.id} className="flex items-start gap-3 border-b border-border/60 px-4 py-2 text-sm last:border-0">
-                  <span className="w-12 shrink-0 pt-0.5 font-mono text-xs text-muted tabular-nums">{apiMode === "mock" ? fmtSim(e.sim_minute) : ""}</span>
-                  <l.icon className={cn("mt-0.5 size-4 shrink-0", TONE_TEXT[l.tone])} aria-label={l.label} />
+                <li key={e.id} className="flex items-start gap-3 border-b border-border/60 px-4 py-2.5 text-[13px] transition-colors last:border-0 hover:bg-surface-2/50">
+                  <span className="w-11 shrink-0 pt-px text-xs text-muted tabular-nums">{apiMode === "mock" ? fmtSim(e.sim_minute) : ""}</span>
+                  <l.icon className={cn("mt-0.5 size-3.5 shrink-0", TONE_TEXT[l.tone])} strokeWidth={2} aria-label={l.label} />
                   <div className="min-w-0">
                     <p className="font-medium leading-snug">{e.title}</p>
-                    <p className="text-xs text-muted">{e.detail}</p>
+                    <p className="mt-0.5 text-xs text-muted">{e.detail}</p>
                   </div>
                 </li>
               );

@@ -22,10 +22,10 @@ export function DialogContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: ReactNode; description?: ReactNode }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-[2px] data-[state=open]:animate-in" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/55" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-[1001] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-5 shadow-2xl focus:outline-none",
+          "fixed left-1/2 top-1/2 z-[1001] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-5 shadow-[0_16px_48px_-12px_rgb(0_0_0/0.45)] focus:outline-none",
           className,
         )}
         {...p}
@@ -58,10 +58,10 @@ export function SheetContent({
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { title: ReactNode; description?: ReactNode }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/50" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-[1000] bg-black/45" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed inset-y-0 right-0 z-[1001] flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-2xl focus:outline-none",
+          "fixed inset-y-0 right-0 z-[1001] flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-[-16px_0_48px_-16px_rgb(0_0_0/0.4)] focus:outline-none",
           className,
         )}
         {...p}
@@ -89,13 +89,13 @@ export function SheetContent({
 
 export const Tabs = TabsPrimitive.Root;
 export function TabsList({ className, ...p }: ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
-  return <TabsPrimitive.List className={cn("inline-flex h-9 items-center gap-1 rounded-lg border border-border bg-surface-2 p-1", className)} {...p} />;
+  return <TabsPrimitive.List className={cn("inline-flex h-9 items-center gap-0.5 rounded-md border border-border bg-surface-2 p-0.5", className)} {...p} />;
 }
 export function TabsTrigger({ className, ...p }: ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-muted transition-colors hover:text-fg data-[state=active]:bg-surface data-[state=active]:text-fg data-[state=active]:shadow-sm [&_svg]:size-3.5 cursor-pointer",
+        "inline-flex h-full cursor-pointer items-center gap-1.5 rounded-[4px] px-3 text-xs font-medium text-muted transition-colors hover:text-fg data-[state=active]:bg-surface data-[state=active]:text-fg data-[state=active]:shadow-[0_1px_2px_rgb(0_0_0/0.12)] [&_svg]:size-3.5",
         className,
       )}
       {...p}
@@ -114,7 +114,7 @@ export function Tooltip({ content, children }: { content: ReactNode; children: R
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content
           sideOffset={6}
-          className="z-[1100] max-w-xs rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs text-fg shadow-lg"
+          className="z-[1100] max-w-xs rounded-md bg-fg px-2.5 py-1.5 text-xs text-bg shadow-md"
         >
           {content}
         </TooltipPrimitive.Content>
@@ -132,7 +132,7 @@ export function DropdownMenuContent({ className, ...p }: ComponentPropsWithoutRe
     <DropdownPrimitive.Portal>
       <DropdownPrimitive.Content
         sideOffset={6}
-        className={cn("z-[1100] min-w-48 rounded-lg border border-border bg-surface p-1 shadow-xl", className)}
+        className={cn("z-[1100] min-w-48 rounded-md border border-border bg-surface p-1 shadow-[0_12px_32px_-8px_rgb(0_0_0/0.35)]", className)}
         {...p}
       />
     </DropdownPrimitive.Portal>
@@ -142,7 +142,7 @@ export function DropdownMenuItem({ className, ...p }: ComponentPropsWithoutRef<t
   return (
     <DropdownPrimitive.Item
       className={cn(
-        "flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none data-[highlighted]:bg-surface-2 data-[disabled]:opacity-50 [&_svg]:size-4",
+        "flex cursor-pointer select-none items-center gap-2 rounded-[4px] px-2 py-1.5 text-sm outline-none transition-colors data-[highlighted]:bg-surface-2 data-[disabled]:opacity-50 [&_svg]:size-4",
         className,
       )}
       {...p}
@@ -150,7 +150,7 @@ export function DropdownMenuItem({ className, ...p }: ComponentPropsWithoutRef<t
   );
 }
 export function DropdownMenuLabel({ className, ...p }: ComponentPropsWithoutRef<typeof DropdownPrimitive.Label>) {
-  return <DropdownPrimitive.Label className={cn("px-2 py-1.5 text-xs font-medium text-muted", className)} {...p} />;
+  return <DropdownPrimitive.Label className={cn("px-2 pt-2 pb-1 text-xs font-medium text-muted", className)} {...p} />;
 }
 export function DropdownMenuSeparator() {
   return <DropdownPrimitive.Separator className="my-1 h-px bg-border" />;

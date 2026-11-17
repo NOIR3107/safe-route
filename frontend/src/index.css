@@ -1,43 +1,58 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 @import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
  * Design tokens. Light values here, dark overrides under .dark (dark is the default theme).
+ *
+ * The chrome is neutral graphite on purpose: in an operations tool colour has to mean something,
+ * so it is kept for status (open / near full / full, open / congested / flooded). The primary
+ * action is the foreground colour itself; the only brand colour is the exit-sign green of the logo.
+ *
  * Semantic pairs: <name> is the solid colour (borders, icons, map), <name>-fg is text that keeps
  * WCAG AA contrast on a 15% tint of <name> over the surface.
  */
 @theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Noto Sans Tamil", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
 
-  --color-bg: #f4f6f9;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 7px;
+  --radius-xl: 9px;
+
+  --color-bg: #f5f5f3;
   --color-surface: #ffffff;
-  --color-surface-2: #eef1f5;
-  --color-border: #d7dde6;
-  --color-fg: #0f172a;
-  --color-muted: #4a5568;
-  --color-accent: #0e7490;
+  --color-surface-2: #f0f0ed;
+  --color-border: #e0e0db;
+  --color-fg: #18191b;
+  --color-muted: #5d6066;
+  --color-accent: #18191b;
   --color-accent-fg: #ffffff;
-  --color-ring: #0891b2;
+  --color-ring: #18191b;
+  --color-brand: #0f8a4c;
 
-  --color-ok: #16a34a;
+  --color-ok: #1a7f37;
   --color-ok-fg: #14532d;
-  --color-lime: #65a30d;
+  --color-lime: #5a8a0f;
   --color-lime-fg: #365314;
-  --color-warn: #d97706;
+  --color-warn: #b7791f;
   --color-warn-fg: #78350f;
-  --color-caution: #ea580c;
+  --color-caution: #d0601c;
   --color-caution-fg: #7c2d12;
-  --color-danger: #dc2626;
+  --color-danger: #cf222e;
   --color-danger-fg: #7f1d1d;
-  --color-info: #0284c7;
+  --color-info: #2f6fb3;
   --color-info-fg: #0c4a6e;
-  --color-neutral: #64748b;
-  --color-neutral-fg: #1e293b;
-  --color-violet: #7c3aed;
+  --color-neutral: #6b6f76;
+  --color-neutral-fg: #2a2c30;
+  --color-violet: #7651c9;
   --color-violet-fg: #4c1d95;
 
   /* Categorical chart series (validated: dataviz validate_palette.js, light & dark) */
@@ -48,31 +63,32 @@
 }
 
 .dark {
-  --color-bg: #0a101c;
-  --color-surface: #111a2b;
-  --color-surface-2: #172238;
-  --color-border: #243149;
-  --color-fg: #e6edf6;
-  --color-muted: #9aa8bd;
-  --color-accent: #22b8cf;
-  --color-accent-fg: #04121a;
-  --color-ring: #38bdf8;
+  --color-bg: #131417;
+  --color-surface: #191a1e;
+  --color-surface-2: #212328;
+  --color-border: #2e3137;
+  --color-fg: #e9eaec;
+  --color-muted: #979ca4;
+  --color-accent: #e9eaec;
+  --color-accent-fg: #111214;
+  --color-ring: #e9eaec;
+  --color-brand: #2fbf71;
 
-  --color-ok: #22c55e;
+  --color-ok: #3fb950;
   --color-ok-fg: #86efac;
-  --color-lime: #84cc16;
+  --color-lime: #8cc43a;
   --color-lime-fg: #bef264;
-  --color-warn: #f59e0b;
+  --color-warn: #d6a02a;
   --color-warn-fg: #fcd34d;
-  --color-caution: #f97316;
+  --color-caution: #e5793a;
   --color-caution-fg: #fdba74;
-  --color-danger: #ef4444;
+  --color-danger: #f0534b;
   --color-danger-fg: #fca5a5;
-  --color-info: #38bdf8;
-  --color-info-fg: #7dd3fc;
-  --color-neutral: #94a3b8;
-  --color-neutral-fg: #cbd5e1;
-  --color-violet: #a78bfa;
+  --color-info: #5b9cf0;
+  --color-info-fg: #a5c8f5;
+  --color-neutral: #8b9098;
+  --color-neutral-fg: #cfd2d6;
+  --color-violet: #a98bf0;
   --color-violet-fg: #c4b5fd;
 
   --color-series-1: #3987e5;
@@ -90,37 +106,58 @@
   #root {
     height: 100%;
   }
+  html {
+    font-size: 15px;
+  }
   body {
-    @apply bg-bg text-fg antialiased;
-    font-feature-settings: "cv11", "ss01";
+    @apply bg-bg font-sans text-fg antialiased;
+    font-feature-settings: "tnum" 0;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
   }
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
   ::selection {
-    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
+    background: color-mix(in oklab, var(--color-fg) 22%, transparent);
   }
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--color-border) transparent;
   }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--color-fg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-/* Leaflet theming */
+/* Leaflet theming. Dark tiles are inverted and nearly desaturated so the status colours carry. */
 .leaflet-container {
   background: var(--color-surface-2);
   font-family: var(--font-sans);
 }
 .dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(185deg) brightness(0.85) contrast(0.9) saturate(0.6);
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.86) saturate(0.18);
+}
+.leaflet-tile-pane {
+  filter: saturate(0.55) contrast(0.96);
 }
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background: var(--color-surface);
   color: var(--color-fg);
   border: 1px solid var(--color-border);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+  border-radius: 6px;
 }
 .leaflet-popup-content {
   margin: 10px 12px;

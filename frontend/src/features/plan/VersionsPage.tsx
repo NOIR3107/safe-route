@@ -1,4 +1,4 @@
-import { AlertOctagon, ArrowRight, Construction, DoorClosed, History, PlugZap, RefreshCw, Sparkles, Undo2, Users, type LucideIcon } from "lucide-react";
+import { AlertOctagon, ArrowRight, Construction, DoorClosed, History, PlugZap, RefreshCw, Flag, Undo2, Users, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import type { DiffMove, PlanMetrics, PlanVersion, ReplanTrigger } from "@/api/extensions";
 import { EmptyState, ErrorState, PageHeader } from "@/components/common";
@@ -10,7 +10,7 @@ import type { Tone } from "@/lib/semantic";
 import { STRATEGY_LABEL } from "@/lib/labels";
 
 const TRIGGER: Record<ReplanTrigger["type"], { icon: LucideIcon; tone: Tone; label: string }> = {
-  Initial: { icon: Sparkles, tone: "info", label: "Initial plan" },
+  Initial: { icon: Flag, tone: "info", label: "Initial plan" },
   Regenerate: { icon: RefreshCw, tone: "info", label: "Re-optimised" },
   RouteBlocked: { icon: Construction, tone: "danger", label: "Route blocked" },
   ShelterFull: { icon: Users, tone: "warn", label: "Shelter full" },
@@ -53,7 +53,7 @@ export function VersionsPage() {
                         aria-current={active ? "true" : undefined}
                         className={cn(
                           "w-full cursor-pointer rounded-lg border p-3 text-left transition-colors",
-                          active ? "border-accent/60 bg-accent/10" : "border-border bg-surface hover:bg-surface-2",
+                          active ? "border-fg/40 bg-surface-2 shadow-[inset_2px_0_0_var(--color-brand)]" : "border-border bg-surface hover:bg-surface-2",
                         )}
                         data-testid="version-item"
                       >
@@ -168,7 +168,7 @@ function MoveRow({ m }: { m: DiffMove }) {
           {m.from_shelter_name ?? "Unallocated"}
         </span>
         <ArrowRight className="size-4 shrink-0 text-muted" aria-label="moved to" />
-        <span className={cn("rounded-md border px-2 py-1 font-medium", m.to_shelter_name ? "border-accent/50 bg-accent/10" : "border-dashed border-danger/50 text-danger-fg")}>
+        <span className={cn("rounded-md border px-2 py-1 font-medium", m.to_shelter_name ? "border-fg/25 bg-surface-2" : "border-dashed border-danger/50 text-danger-fg")}>
           {m.to_shelter_name ?? "No feasible shelter"}
         </span>
       </div>
@@ -197,13 +197,13 @@ function MetricDeltas({ m, prev }: { m: PlanMetrics; prev: PlanMetrics | null })
     { label: "Worst arrival", value: fmtMinutes(m.worst_eta), delta: prev ? m.worst_eta - prev.worst_eta : null, lowerIsBetter: true, unit: " min" },
   ];
   return (
-    <dl className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+    <dl className="mt-4 grid grid-cols-2 sm:grid-cols-4 overflow-hidden rounded-md border border-border [&>*]:border-border max-sm:[&>*:nth-child(odd)]:border-r max-sm:[&>*:nth-child(-n+2)]:border-b sm:[&>*:not(:last-child)]:border-r">
       {items.map((i) => {
         const good = i.delta == null || i.delta === 0 ? null : i.lowerIsBetter ? i.delta < 0 : i.delta > 0;
         return (
-          <div key={i.label} className="rounded-lg border border-border bg-surface-2/50 p-2.5">
+          <div key={i.label} className="px-3 py-2.5">
             <dt className="text-xs text-muted">{i.label}</dt>
-            <dd className="mt-0.5 flex items-baseline gap-2">
+            <dd className="mt-1 flex items-baseline gap-2">
               <span className="font-semibold tabular-nums">{i.value}</span>
               {i.delta != null && Math.round(i.delta) !== 0 ? (
                 <span className={cn("text-xs tabular-nums", good ? "text-ok-fg" : "text-danger-fg")}>{signed(i.delta, i.unit)}</span>

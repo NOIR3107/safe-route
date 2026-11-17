@@ -6,15 +6,16 @@ import { Dialog, DialogContent } from "@/components/ui/overlay";
 import { Label, Skeleton, Textarea } from "@/components/ui/primitives";
 import { cn, errorMessage } from "@/lib/utils";
 
-export function PageHeader({ title, description, actions, icon: Icon }: { title: string; description?: ReactNode; actions?: ReactNode; icon?: LucideIcon }) {
+/**
+ * Page title row. `icon` is still accepted so callers don't change, but it isn't drawn: the
+ * sidebar already shows it next to the same name, and a coloured icon on every title was noise.
+ */
+export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode; icon?: LucideIcon }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-4 py-4 sm:px-6">
-      <div className="min-w-0">
-        <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          {Icon ? <Icon className="size-5 text-accent" aria-hidden /> : null}
-          {title}
-        </h1>
-        {description ? <p className="mt-0.5 text-sm text-muted">{description}</p> : null}
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-border bg-surface/40 px-4 pt-5 pb-4 sm:px-6">
+      <div className="min-w-0 max-w-3xl">
+        <h1 className="text-[1.35rem] leading-tight font-semibold tracking-[-0.015em]">{title}</h1>
+        {description ? <p className="mt-1 text-[13.5px] leading-relaxed text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
@@ -24,9 +25,7 @@ export function PageHeader({ title, description, actions, icon: Icon }: { title:
 export function EmptyState({ icon: Icon = Inbox, title, children, action, className }: { icon?: LucideIcon; title: string; children?: ReactNode; action?: ReactNode; className?: string }) {
   return (
     <div className={cn("flex flex-col items-center justify-center gap-2 px-6 py-12 text-center", className)}>
-      <div className="flex size-11 items-center justify-center rounded-full border border-border bg-surface-2">
-        <Icon className="size-5 text-muted" aria-hidden />
-      </div>
+      <Icon className="mb-1 size-6 text-muted/70" strokeWidth={1.5} aria-hidden />
       <p className="font-medium">{title}</p>
       {children ? <div className="max-w-md text-sm text-muted">{children}</div> : null}
       {action ? <div className="mt-2">{action}</div> : null}
@@ -120,7 +119,7 @@ export function Stat({ label, value, sub, className }: { label: string; value: R
   return (
     <div className={cn("min-w-0", className)}>
       <p className="truncate text-xs text-muted">{label}</p>
-      <p className="mt-0.5 text-lg font-semibold tabular-nums tracking-tight">{value}</p>
+      <p className="mt-1 text-xl leading-none font-semibold tabular-nums tracking-[-0.02em]">{value}</p>
       {sub ? <p className="text-xs text-muted">{sub}</p> : null}
     </div>
   );

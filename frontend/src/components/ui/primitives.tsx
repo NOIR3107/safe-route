@@ -4,13 +4,14 @@ import { TONE_CLASSES, type Tone } from "@/lib/semantic";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, ...p }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-xl border border-border bg-surface shadow-sm", className)} {...p} />;
+  return <div className={cn("rounded-lg border border-border bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)] dark:shadow-none", className)} {...p} />;
 }
 export function CardHeader({ className, ...p }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-start justify-between gap-3 px-4 pt-4 pb-2", className)} {...p} />;
+  return <div className={cn("flex items-center justify-between gap-3 px-4 pt-3.5 pb-2", className)} {...p} />;
 }
 export function CardTitle({ className, ...p }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("text-sm font-semibold tracking-tight text-fg", className)} {...p} />;
+  // Titles are plain text: the per-card icons callers pass in are hidden so headings read as one quiet system.
+  return <h2 className={cn("flex items-center gap-1.5 text-[13px] font-semibold text-fg [&>svg]:hidden", className)} {...p} />;
 }
 export function CardDescription({ className, ...p }: HTMLAttributes<HTMLParagraphElement>) {
   return <p className={cn("text-xs text-muted", className)} {...p} />;
@@ -23,7 +24,7 @@ export function Badge({ tone = "neutral", className, ...p }: HTMLAttributes<HTML
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium whitespace-nowrap [&_svg]:size-3.5 [&_svg]:shrink-0",
+        "inline-flex items-center gap-1 rounded-sm border px-1.5 py-px text-[11.5px] font-medium leading-[18px] whitespace-nowrap [&_svg]:size-3.5 [&_svg]:shrink-0",
         TONE_CLASSES[tone],
         className,
       )}
@@ -33,7 +34,7 @@ export function Badge({ tone = "neutral", className, ...p }: HTMLAttributes<HTML
 }
 
 const field =
-  "flex w-full rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
+  "flex w-full rounded-md border border-border bg-surface px-3 text-sm text-fg shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-[border-color,box-shadow] duration-150 placeholder:text-muted/70 hover:border-fg/20 focus-visible:border-fg/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-fg/10 disabled:opacity-50";
 
 export function Input({ className, ...p }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(field, "h-9 py-1", className)} {...p} />;
@@ -58,7 +59,7 @@ export function Label({ className, ...p }: LabelHTMLAttributes<HTMLLabelElement>
 }
 
 export function Skeleton({ className, ...p }: HTMLAttributes<HTMLDivElement>) {
-  return <div aria-hidden className={cn("animate-pulse rounded-md bg-surface-2", className)} {...p} />;
+  return <div aria-hidden className={cn("animate-pulse rounded-sm bg-surface-2", className)} {...p} />;
 }
 
 export function Table({ className, ...p }: HTMLAttributes<HTMLTableElement>) {
@@ -69,19 +70,19 @@ export function Table({ className, ...p }: HTMLAttributes<HTMLTableElement>) {
   );
 }
 export function THead({ className, ...p }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn("[&_tr]:border-b [&_tr]:border-border", className)} {...p} />;
+  return <thead className={cn("bg-surface-2/50 [&_tr]:border-b [&_tr]:border-border", className)} {...p} />;
 }
 export function TBody({ className, ...p }: HTMLAttributes<HTMLTableSectionElement>) {
   return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...p} />;
 }
 export function TR({ className, ...p }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn("border-b border-border/70 transition-colors", className)} {...p} />;
+  return <tr className={cn("border-b border-border/70 transition-colors duration-100", className)} {...p} />;
 }
 export function TH({ className, ...p }: ThHTMLAttributes<HTMLTableCellElement>) {
   return <th scope="col" className={cn("h-9 px-3 text-left align-middle text-xs font-medium text-muted whitespace-nowrap", className)} {...p} />;
 }
 export function TD({ className, ...p }: TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn("px-3 py-2 align-middle", className)} {...p} />;
+  return <td className={cn("px-3 py-2.5 align-middle", className)} {...p} />;
 }
 
 export function Progress({ value, tone = "info", className, label }: { value: number; tone?: Tone; className?: string; label: string }) {
@@ -97,12 +98,12 @@ export function Progress({ value, tone = "info", className, label }: { value: nu
     violet: "bg-violet",
   };
   return (
-    <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} className={cn("h-1.5 w-full overflow-hidden rounded-full bg-surface-2", className)}>
-      <div className={cn("h-full rounded-full transition-[width] duration-500", bar[tone])} style={{ width: `${pct}%` }} />
+    <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} className={cn("h-1.5 w-full overflow-hidden rounded-[2px] bg-surface-2", className)}>
+      <div className={cn("h-full rounded-[2px] transition-[width] duration-500 ease-out", bar[tone])} style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
 export function Kbd({ className, ...p }: HTMLAttributes<HTMLElement>) {
-  return <kbd className={cn("rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted", className)} {...p} />;
+  return <kbd className={cn("rounded-sm border border-b-2 border-border bg-surface-2 px-1.5 py-px font-mono text-[11px] text-muted", className)} {...p} />;
 }

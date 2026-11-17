@@ -28,8 +28,8 @@ function shelterIcon(s: ShelterView, hex: Record<Tone, string>): L.DivIcon {
   const pct = Math.round(((s.current_occupancy + s.inbound) / s.capacity) * 100);
   const html = `
     <div style="display:flex;flex-direction:column;align-items:center;transform:translateY(-4px)">
-      <div style="width:30px;height:30px;border-radius:8px;background:${color};border:2px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;color:#0b1220;font:700 15px/1 Inter Variable,system-ui">${SHELTER_GLYPH[s.display_status]}</div>
-      <div style="margin-top:2px;padding:0 4px;border-radius:4px;background:rgba(10,16,28,.85);color:#fff;font:600 10px/16px Inter Variable,system-ui;white-space:nowrap">${pct}%</div>
+      <div style="width:28px;height:28px;border-radius:5px;background:${color};border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#111214;font:600 15px/1 IBM Plex Sans,system-ui">${SHELTER_GLYPH[s.display_status]}</div>
+      <div style="margin-top:2px;padding:0 4px;border-radius:4px;background:rgba(17,18,20,.88);color:#fff;font:600 10px/16px IBM Plex Sans,system-ui;white-space:nowrap">${pct}%</div>
     </div>`;
   return L.divIcon({ html, className: "sr-marker", iconSize: [40, 48], iconAnchor: [20, 30], popupAnchor: [0, -26] });
 }
@@ -195,7 +195,7 @@ export function OpsMap({ zones = [], shelters = [], routes = [], vehicles = [], 
                   key={`v${v.vehicle_id}`}
                   center={v.ext.position}
                   radius={moving ? 5 : 3.5}
-                  pathOptions={{ color: theme === "dark" ? "#0a101c" : "#ffffff", weight: 1.5, fillColor: hex[st.tone], fillOpacity: v.status === "Available" ? 0.6 : 1 }}
+                  pathOptions={{ color: theme === "dark" ? "#131417" : "#ffffff", weight: 1.5, fillColor: hex[st.tone], fillOpacity: v.status === "Available" ? 0.6 : 1 }}
                 >
                   <Tooltip>
                     {v.vehicle_type} {v.plate_number} · {st.label} · {v.capacity} seats
@@ -221,7 +221,7 @@ function MapLegend() {
     { key: "vehicles", label: "Vehicles" },
   ];
   return (
-    <div className="absolute bottom-3 left-3 z-[500] max-w-[calc(100%-1.5rem)] rounded-lg border border-border bg-surface/95 p-2.5 text-xs shadow-lg backdrop-blur">
+    <div className="absolute bottom-3 left-3 z-[500] max-w-[calc(100%-1.5rem)] rounded-md border border-border bg-surface/95 p-2.5 text-xs shadow-[0_4px_16px_-6px_rgb(0_0_0/0.35)]">
       <fieldset className="flex flex-wrap gap-x-3 gap-y-1">
         <legend className="sr-only">Map layers</legend>
         {items.map((i) => (

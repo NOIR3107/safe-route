@@ -51,14 +51,14 @@ function DrawerBody({ a, close }: { a: AssignmentView; close: () => void }) {
           })}
         </div>
 
-        <p className="rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm leading-relaxed">{ex.summary}</p>
+        <p className="rounded-md border border-border border-l-2 border-l-fg/70 bg-surface-2 px-3.5 py-3 text-sm leading-relaxed">{ex.summary}</p>
         {a.ext.override_reason ? (
-          <p className="rounded-lg border border-violet/40 bg-violet/10 p-3 text-sm">
+          <p className="rounded-md border border-violet/30 border-l-2 border-l-violet bg-violet/8 px-3.5 py-3 text-sm">
             <Undo2 className="mr-1 inline size-4" aria-hidden /> Overridden: “{a.ext.override_reason}”
           </p>
         ) : null}
 
-        <dl className="grid grid-cols-3 gap-3 text-sm">
+        <dl className="grid grid-cols-3 overflow-hidden rounded-md border border-border text-sm [&>div]:border-border [&>div:nth-child(-n+2)]:border-r [&>div:nth-child(-n+3)]:border-b">
           <Fact label="People" value={`${fmtNum(a.people_count)} (${a.ext.household_ids.length} households)`} />
           <Fact label="ETA" value={`${fmtMinutes(a.ext.eta_minutes)} · ${fmtSim(a.ext.dispatch_minute + a.ext.eta_minutes)}`} />
           <Fact label="Route" value={a.route_label ?? "—"} />
@@ -78,7 +78,7 @@ function DrawerBody({ a, close }: { a: AssignmentView; close: () => void }) {
 
         <section aria-labelledby="cost-h">
           <h3 id="cost-h" className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-            <CircleDollarSign className="size-4 text-accent" aria-hidden /> Cost breakdown <span className="font-normal text-muted">(per person, weighted minutes)</span>
+            <CircleDollarSign className="size-4 text-muted" aria-hidden /> Cost breakdown <span className="font-normal text-muted">(per person, weighted minutes)</span>
           </h3>
           <CostBars cost={ex.cost} />
           <ul className="mt-2 space-y-0.5 text-xs text-muted">
@@ -161,7 +161,7 @@ function DrawerBody({ a, close }: { a: AssignmentView; close: () => void }) {
 
 function Fact({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
-    <div className={cn("rounded-lg border border-border bg-surface-2/50 p-2.5", className)}>
+    <div className={cn("px-3 py-2.5", className)}>
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-0.5 font-medium">{value}</dd>
     </div>

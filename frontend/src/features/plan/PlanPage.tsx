@@ -1,4 +1,4 @@
-import { AlertOctagon, ChevronRight, GitCompare, ListChecks, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertOctagon, ChevronRight, GitCompare, ListChecks, RefreshCw, ShieldCheck, Play } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { AssignmentView, StrategyId } from "@/api/extensions";
@@ -92,7 +92,7 @@ export function PlanPage() {
             </Button>
             {can("plan:generate") ? (
               <Button onClick={() => generate.mutate(strategy)} disabled={generate.isPending} data-testid="generate-plan">
-                {plan ? <RefreshCw /> : <Sparkles />}
+                {plan ? <RefreshCw /> : <Play />}
                 {generate.isPending ? "Working…" : plan ? `Re-plan (${STRATEGY_LABEL[strategy]})` : "Generate plan"}
               </Button>
             ) : null}
@@ -106,7 +106,7 @@ export function PlanPage() {
       />
       <div className="space-y-4 p-4 sm:p-6">
         {version ? (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+          <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface md:grid-cols-5 [&>*]:border-border max-md:[&>*:nth-child(odd)]:border-r max-md:[&>*:nth-child(-n+4)]:border-b md:[&>*:not(:last-child)]:border-r">
             <Summary label="Status" value={<ApprovalBadge state={version.status === "Approved" ? "Approved" : "Proposed"} />} />
             <Summary label="People allocated" value={fmtNum(version.metrics.people_allocated)} />
             <Summary label="Unallocated" value={fmtNum(version.metrics.people_unallocated)} danger={version.metrics.people_unallocated > 0} />
@@ -158,12 +158,12 @@ export function PlanPage() {
             <ErrorState error={error} onRetry={() => void refetch()} />
           ) : !plan ? (
             <EmptyState
-              icon={Sparkles}
+              icon={ListChecks}
               title="No plan generated yet"
               action={
                 can("plan:generate") ? (
                   <Button onClick={() => generate.mutate(strategy)} disabled={generate.isPending}>
-                    <Sparkles /> Generate plan
+                    <Play /> Generate plan
                   </Button>
                 ) : undefined
               }
@@ -260,7 +260,7 @@ export function PlanPage() {
         {plan && plan.versions.length > 1 ? (
           <p className="text-sm text-muted">
             This plan has {plan.versions.length} versions.{" "}
-            <Link to="/plan/versions" className="text-accent hover:underline">
+            <Link to="/plan/versions" className="underline decoration-fg/30 underline-offset-4 transition-colors hover:decoration-fg">
               See what changed and why →
             </Link>
           </p>
@@ -271,12 +271,13 @@ export function PlanPage() {
   );
 }
 
+/** One cell of the summary strip above the table: a single bordered row split by rules, not five cards. */
 function Summary({ label, value, danger }: { label: string; value: ReactNode; danger?: boolean }) {
   return (
-    <Card className={cn("p-3", danger && "border-danger/50")}>
-      <p className="text-xs text-muted">{label}</p>
-      <div className={cn("mt-1 text-base font-semibold tabular-nums", danger && "text-danger-fg")}>{value}</div>
-    </Card>
+    <div className={cn("min-w-0 px-4 py-3", danger && "bg-danger/8")}>
+      <p className="truncate text-xs text-muted">{label}</p>
+      <div className={cn("mt-1 truncate text-[15px] font-semibold tabular-nums", danger && "text-danger-fg")}>{value}</div>
+    </div>
   );
 }
 
