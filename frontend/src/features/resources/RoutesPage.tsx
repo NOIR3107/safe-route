@@ -1,4 +1,6 @@
 import { Plus, Route as RouteIcon } from "lucide-react";
+import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import type { MapSelection } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import { ROUTE_RISK_LEVELS, type RouteRiskLevel } from "@/api/schemas";
 import { EmptyState, ErrorState, PageHeader, TableSkeleton } from "@/components/common";
@@ -16,6 +18,7 @@ import { fmtNum } from "@/lib/utils";
 const RISK_TONE: Record<RouteRiskLevel, "ok" | "warn" | "caution" | "danger"> = { Low: "ok", Moderate: "warn", High: "caution", Severe: "danger" };
 
 export function RoutesPage() {
+  const [focus, setFocus] = useState<MapSelection>(null);
   const { data, isLoading, error, refetch } = useRoutes();
   const { data: assignments } = useAssignments();
   const { data: zones } = useZones();
@@ -87,7 +90,8 @@ export function RoutesPage() {
           ) : null
         }
       />
-      <div className="p-4 sm:p-6">
+      <div className="space-y-4 p-4 sm:p-6">
+        <EmbeddedMap focus={focus ?? undefined} />
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
             <Input aria-label="Search routes" placeholder="Search route, place or bridge…" value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
@@ -128,7 +132,7 @@ export function RoutesPage() {
               </THead>
               <TBody>
                 {rows.map((r) => (
-                  <TR key={r.route_id} data-testid={`route-row-${r.route_id}`}>
+                  <TR key={r.route_id} data-testid={`route-row-${r.route_id}`} className="cursor-pointer hover:bg-surface-2/50" onClick={() => setFocus({ kind: "route", id: r.route_id })}>
                     <TD className="font-mono text-xs">R{r.route_id}</TD>
                     <TD className="whitespace-nowrap">
                       {r.source} → {r.destination}

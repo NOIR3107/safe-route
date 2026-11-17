@@ -8,7 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/overlay";
 import { Badge, Card, CardContent, CardHeader, CardTitle, Input, Label, Progress, Select, Skeleton } from "@/components/ui/primitives";
 import { useCheckIn, useReunify, useRoster, useShelters, useWalkIn } from "@/hooks/queries";
 import { useSession } from "@/hooks/session";
-import { occupancyTone } from "@/lib/semantic";
+import { SHELTER_STATUS } from "@/lib/semantic";
 import { cn, fmtNum } from "@/lib/utils";
 import type { CheckInResult } from "@/api/SafeRouteApi";
 
@@ -51,7 +51,7 @@ export function CheckInPage() {
                 Live occupancy <span className="text-2xl font-semibold tabular-nums text-fg" data-testid="live-occupancy">{fmtNum(shelter.current_occupancy)}</span> / {fmtNum(shelter.capacity)}
               </p>
             </div>
-            <Progress className="mt-3 h-2.5" value={shelter.current_occupancy / shelter.capacity} tone={occupancyTone(shelter.current_occupancy / shelter.capacity)} label="Occupancy" />
+            <Progress className="mt-3 h-2.5" value={shelter.current_occupancy / shelter.capacity} tone={SHELTER_STATUS[shelter.display_status].tone} label="Occupancy" />
             <dl className="mt-4 grid grid-cols-2 text-sm sm:grid-cols-4 overflow-hidden rounded-md border border-border [&>*]:border-border max-sm:[&>*:nth-child(odd)]:border-r max-sm:[&>*:nth-child(-n+2)]:border-b sm:[&>*:not(:last-child)]:border-r">
               <Fact label="Present" value={fmtNum(shelter.current_occupancy)} />
               <Fact label="Inbound (planned)" value={fmtNum(shelter.inbound)} />

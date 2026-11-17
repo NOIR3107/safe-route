@@ -1,4 +1,6 @@
 import { Building2, Pencil, Plus } from "lucide-react";
+import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import type { MapSelection } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import { FACILITIES, type Facility, type ShelterView } from "@/api/extensions";
 import type { ShelterStatus } from "@/api/schemas";
@@ -34,6 +36,7 @@ const FIELDS: FieldSpec[] = [
 ];
 
 export function SheltersPage() {
+  const [focus, setFocus] = useState<MapSelection>(null);
   const { data, isLoading, error, refetch } = useShelters();
   const { can, user } = useSession();
   const create = useCreateShelter();
@@ -84,7 +87,8 @@ export function SheltersPage() {
           ) : null
         }
       />
-      <div className="p-4 sm:p-6">
+      <div className="space-y-4 p-4 sm:p-6">
+        <EmbeddedMap focus={focus ?? undefined} />
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
             <Input aria-label="Search shelters" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="w-56" />
@@ -124,7 +128,7 @@ export function SheltersPage() {
                   const load = (s.current_occupancy + s.inbound) / s.capacity;
                   const listed = (s.facilities ?? "").split(",").map((f) => f.trim()).filter((f): f is Facility => (FACILITIES as readonly string[]).includes(f));
                   return (
-                    <TR key={s.shelter_id}>
+                    <TR key={s.shelter_id} className="cursor-pointer hover:bg-surface-2/50" onClick={() => setFocus({ kind: "shelter", id: s.shelter_id })}>
                       <TD>
                         <p className="font-medium">{s.name}</p>
                         <p className="text-xs text-muted">

@@ -1,4 +1,6 @@
 import { Accessibility, Baby, HeartPulse, Map as MapIcon, Pencil, PersonStanding, Plus } from "lucide-react";
+import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import type { MapSelection } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import type { ZoneView } from "@/api/extensions";
 import { ZONE_PRIORITIES, ZONE_RISK_LEVELS, type ZonePriority, type ZoneRiskLevel } from "@/api/schemas";
@@ -21,6 +23,7 @@ const FIELDS: FieldSpec[] = [
 ];
 
 export function ZonesPage() {
+  const [focus, setFocus] = useState<MapSelection>(null);
   const { data, isLoading, error, refetch } = useZones();
   const { data: disasters } = useDisasters();
   const { can } = useSession();
@@ -68,7 +71,8 @@ export function ZonesPage() {
           ) : null
         }
       />
-      <div className="p-4 sm:p-6">
+      <div className="space-y-4 p-4 sm:p-6">
+        <EmbeddedMap focus={focus ?? undefined} />
         <Card>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
             <Input aria-label="Search zones" placeholder="Search name or code…" value={q} onChange={(e) => setQ(e.target.value)} className="w-56" />
@@ -107,7 +111,7 @@ export function ZonesPage() {
                 {rows.map((z) => {
                   const done = z.population > 0 ? z.evacuated_count / z.population : 0;
                   return (
-                    <TR key={z.zone_id}>
+                    <TR key={z.zone_id} className="cursor-pointer hover:bg-surface-2/50" onClick={() => setFocus({ kind: "zone", id: z.zone_id })}>
                       <TD>
                         <p className="font-medium">{z.name}</p>
                         <p className="font-mono text-xs text-muted">{z.ext.code}</p>

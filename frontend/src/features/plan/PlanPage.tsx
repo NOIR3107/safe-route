@@ -228,7 +228,7 @@ export function PlanPage() {
                     <TD className="max-w-48 truncate text-xs text-muted" title={a.route_label ?? ""}>
                       {a.route_label}
                     </TD>
-                    <TD className="text-right tabular-nums">
+                    <TD className="text-right tabular-nums whitespace-nowrap">
                       {fmtMinutes(a.ext.eta_minutes)}
                       <span className="block text-xs text-muted">{fmtSim(a.ext.dispatch_minute + a.ext.eta_minutes)}</span>
                     </TD>

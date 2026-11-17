@@ -12,6 +12,8 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
     colorScheme: "dark",
     trace: "retain-on-failure",
+    // CesiumJS needs WebGL; headless Chromium gets it from SwiftShader (software, so FPS is low).
+    launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } }],
   webServer: {

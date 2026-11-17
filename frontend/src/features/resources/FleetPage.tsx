@@ -1,4 +1,6 @@
 import { Ambulance, Boxes, Bus, Plus, Ship, Truck, Users, Car, type LucideIcon } from "lucide-react";
+import { EmbeddedMap } from "@/components/map/EmbeddedMap";
+import { useMapStore } from "@/components/map/mapStore";
 import { useMemo, useState } from "react";
 import { TEAM_STATUSES, VEHICLE_TYPES, type TeamStatus, type Vehicle, type VehicleStatus } from "@/api/schemas";
 import { EmptyState, ErrorState, PageHeader, TableSkeleton } from "@/components/common";
@@ -27,10 +29,12 @@ const TEAM_FIELDS: FieldSpec[] = [
 ];
 
 export function FleetPage() {
+  const focus = useMapStore((st) => st.selection);
   return (
     <div>
       <PageHeader icon={Bus} title="Vehicles & Rescue Teams" description="Capacity, type, location and availability (FR-05). Vehicles in transit are shown live on the dashboard map." />
-      <div className="p-4 sm:p-6">
+      <div className="space-y-4 p-4 sm:p-6">
+        <EmbeddedMap focus={focus ?? undefined} />
         <Tabs defaultValue="vehicles">
           <TabsList aria-label="Fleet sections">
             <TabsTrigger value="vehicles">
@@ -132,7 +136,7 @@ function VehiclesTab() {
               const Icon = TYPE_ICON[v.vehicle_type];
               const next: VehicleStatus | null = v.status === "Available" ? "Maintenance" : v.status === "Maintenance" ? "Available" : null;
               return (
-                <TR key={v.vehicle_id}>
+                <TR key={v.vehicle_id} className="cursor-pointer hover:bg-surface-2/50" onClick={() => useMapStore.getState().select({ kind: "vehicle", id: v.vehicle_id })}>
                   <TD>
                     <span className="flex items-center gap-2">
                       <Icon className="size-4 text-muted" aria-hidden />

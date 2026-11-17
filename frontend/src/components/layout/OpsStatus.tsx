@@ -59,10 +59,17 @@ export function OpsStatus() {
       </span>
       {clock?.feed.source && clock.feed.stale && clock.mode === "live" ? (
         <span className="hidden text-warn-fg xl:inline" title="No message from the live feed recently">
-          Feed quiet {clock.feed.seconds_since != null ? `${Math.round(clock.feed.seconds_since)} s` : ""}
+          Feed quiet {clock.feed.seconds_since != null ? fmtQuiet(clock.feed.seconds_since) : ""}
         </span>
       ) : null}
     </div>
   );
 }
 
+
+/** 42 s, 21 min, 3 h 5 min */
+function fmtQuiet(seconds: number): string {
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  const m = Math.floor(seconds / 60);
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
+}

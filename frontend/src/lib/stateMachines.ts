@@ -1,4 +1,4 @@
-/** Legal status transitions. The UI only offers these; the mock API rejects anything else (409). */
+/** Legal status transitions. The UI only offers these; the backend rejects anything else (409). */
 import type { RouteStatus, ShelterStatus } from "@/api/schemas";
 
 export const ROUTE_TRANSITIONS: Record<RouteStatus, RouteStatus[]> = {
