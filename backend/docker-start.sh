@@ -8,4 +8,5 @@ if python -c "from app.core.database import dbs; from app.models.disaster import
 else
   python -m app.seed
 fi
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Hosts such as Render pass the port to listen on in $PORT.
+exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}" --proxy-headers --forwarded-allow-ips "*"

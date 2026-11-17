@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
     BCRYPT_ROUNDS: int = 12  # tests use 4 to stay fast
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"]
+    # Optional pattern for hosted frontends whose URL changes per deploy (e.g. Vercel previews).
+    CORS_ORIGIN_REGEX: str | None = None
 
     # The demo role buttons on the login page call /auth/demo-accounts. Turn off outside the lab.
     DEMO_ACCOUNTS: bool = True
